@@ -17,9 +17,14 @@ let QuestionsSchema = new Schema({
   email: { type: String, required: true, maxLength: 60 },
   helpfulness: { type: Number, min: 0, default: 0 },
   reported: { type: Boolean, required: true, default: false },
-  product_id: Schema.Types.ObjectId, // reference to Product document
-  answers: [Schema.Types.ObjectId], // array of references to Answers document
+  // reference to Product document
+  product_id: Schema.Types.ObjectId,
+  // array of references to Answers document
+  answers: [{
+    answer_id: Schema.Types.ObjectId
+  }],
 });
+
 
 let AnswersSchema = new Schema({
   answer_id: { type: Number, index: true, unique: true },
@@ -29,10 +34,12 @@ let AnswersSchema = new Schema({
   email: { type: String, required: true, maxLength: 60 },
   helpfulness: { type: Number, min: 0, default: 0 },
   reported: { type: Boolean, required: true, default: false },
+  // reference to Questions document
   question_id: Schema.Types.ObjectId,
+  // photos directly embedded in Answers
   photos: [{
-    url: { type: String, required: true, unique: true } // photos directly embedded in Answers
-  }]
+    url: { type: String, required: true, unique: true }
+  }],
 });
 
 
