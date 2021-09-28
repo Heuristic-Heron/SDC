@@ -1,19 +1,13 @@
-var mysql = require('mysql')
-var connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'password',
-  database: 'movielist'
-})
+// for connection with postgresql
+// $ npm install pg-promise
 
-connection.connect()
+var pgp = require('pg-promise')(/* options */)
+var db = pgp('postgres://username:password@host:port/database')
 
-connection.query('SELECT 1 + 1 AS solution', function (err, rows, fields) {
-  if (err) throw err
-
-  console.log('mySQL is running! The solution is: ', rows[0].solution)
-})
-
-// connection.end()
-
-module.exports = connection;
+db.one('SELECT $1 AS value', 123)
+  .then(function (data) {
+    console.log('DATA:', data.value)
+  })
+  .catch(function (error) {
+    console.log('ERROR:', error)
+  })
