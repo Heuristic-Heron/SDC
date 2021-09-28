@@ -1,100 +1,80 @@
+DROP DATABASE IF EXISTS qanda;
+CREATE DATABASE qanda;
+USE qanda;
 -- ---
--- Globals
--- ---
-
--- SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
--- SET FOREIGN_KEY_CHECKS=0;
-
--- ---
--- Table 'questions'
+-- Table questions
 --
 -- ---
 
-DROP TABLE IF EXISTS `questions`;
+DROP TABLE IF EXISTS questions;
 
-CREATE TABLE `questions` (
-  `product_id` INTEGER NOT NULL DEFAULT NULL,
-  `id` INTEGER NOT NULL AUTO_INCREMENT DEFAULT 0,
-  `body` VARCHAR NOT NULL DEFAULT 'NULL',
-  `date` DATETIME NOT NULL DEFAULT 'NULL',
-  `name` VARCHAR NOT NULL DEFAULT 'NULL',
-  `email` VARCHAR NOT NULL DEFAULT 'NULL',
-  `helpfulness` INT NULL DEFAULT 0,
-  `reported` CHAR NOT NULL DEFAULT 'false' COMMENT 'should be boolean datatype',
-  PRIMARY KEY (`id`)
+CREATE TABLE questions (
+  question_id INT unsigned AUTO_INCREMENT PRIMARY KEY,
+  body VARCHAR(1000) NOT NULL UNIQUE,
+  date DATETIME NOT NULL,
+  name VARCHAR(60) NOT NULL,
+  email VARCHAR(60) NOT NULL,
+  helpfulness INT NOT NULL DEFAULT 0,
+  reported BOOLEAN NOT NULL DEFAULT false,
+  product_id INT REFERENCES products ON DELETE CASCADE
 );
 
 -- ---
--- Table 'answers'
+-- Table answers
 --
 -- ---
 
-DROP TABLE IF EXISTS `answers`;
+DROP TABLE IF EXISTS answers;
 
-CREATE TABLE `answers` (
-  `question_id` INTEGER NOT NULL DEFAULT 0,
-  `id` INTEGER NOT NULL AUTO_INCREMENT DEFAULT NULL,
-  `body` VARCHAR NOT NULL DEFAULT 'NULL',
-  `date` DATETIME NOT NULL DEFAULT 'NULL',
-  `name` VARCHAR NULL DEFAULT NULL,
-  `email` VARCHAR NOT NULL DEFAULT 'NULL',
-  `helpfulness` INT NOT NULL DEFAULT 0,
-  `reported` CHAR NOT NULL DEFAULT 'false' COMMENT 'should be boolean',
-  PRIMARY KEY (`id`)
+CREATE TABLE answers (
+  answer_id INT unsigned AUTO_INCREMENT PRIMARY KEY,
+  body VARCHAR(1000) NOT NULL UNIQUE,
+  date DATETIME NOT NULL,
+  name VARCHAR(60) NOT NULL,
+  email VARCHAR(60) NOT NULL,
+  helpfulness INT NOT NULL DEFAULT 0,
+  reported BOOLEAN NOT NULL DEFAULT false,
+  question_id INT REFERENCES questions ON DELETE CASCADE
 );
 
 -- ---
--- Table 'photos'
+-- Table photos
 --
 -- ---
 
-DROP TABLE IF EXISTS `photos`;
+DROP TABLE IF EXISTS photos;
 
-CREATE TABLE `photos` (
-  `answer_id` INTEGER NOT NULL DEFAULT NULL,
-  `id` INTEGER NULL AUTO_INCREMENT DEFAULT NULL,
-  `url` VARCHAR NOT NULL DEFAULT 'NULL',
-  PRIMARY KEY (`id`)
+CREATE TABLE photos (
+  photo_id INT unsigned AUTO_INCREMENT PRIMARY KEY,
+  url VARCHAR(500) NOT NULL UNIQUE,
+  answer_id INT REFERENCES answers ON DELETE CASCADE
 );
 
--- ---
--- Table 'product'
---
--- ---
+-- -- ---
+-- -- Table product
+-- --
+-- -- ---
 
-DROP TABLE IF EXISTS `product`;
+-- DROP TABLE IF EXISTS product;
 
-CREATE TABLE `product` (
-  `id` INTEGER NULL AUTO_INCREMENT DEFAULT NULL,
-  PRIMARY KEY (`id`)
-);
+-- CREATE TABLE product (
+--   id INT unsigned NOT NULL AUTO_INCREMENT PRIMARY KEY,
 
--- ---
--- Foreign Keys
--- ---
+-- );
 
-ALTER TABLE `questions` ADD FOREIGN KEY (product_id) REFERENCES `product` (`id`);
-ALTER TABLE `answers` ADD FOREIGN KEY (question_id) REFERENCES `questions` (`id`);
-ALTER TABLE `photos` ADD FOREIGN KEY (answer_id) REFERENCES `answers` (`id`);
-
--- ---
--- Table Properties
--- ---
-
--- ALTER TABLE `questions` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `answers` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `photos` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
--- ALTER TABLE `product` ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- ---
 -- Test Data
 -- ---
 
--- INSERT INTO `questions` (`product_id`,`id`,`body`,`date`,`name`,`email`,`helpfulness`,`reported`) VALUES
--- ('','','','','','','','');
--- INSERT INTO `answers` (`question_id`,`id`,`body`,`date`,`name`,`email`,`helpfulness`,`reported`) VALUES
--- ('','','','','','','','');
--- INSERT INTO `photos` (`answer_id`,`id`,`url`) VALUES
--- ('','','');
--- INSERT INTO `product` (`id`) VALUES
--- ('');
+-- INSERT INTO questions (product_id,id,body,date,name,email,helpfulness,reported) VALUES
+-- (5,,,,,,,);
+
+-- INSERT INTO answers (question_id,id,body,date,name,email,helpfulness,reported) VALUES
+-- (,,,,,,,);
+
+-- INSERT INTO photos (answer_id,id,url) VALUES
+-- (,,);
+
+-- INSERT INTO product (id) VALUES
+-- (1, 2, 3, 4, 5);
