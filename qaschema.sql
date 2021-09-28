@@ -1,6 +1,7 @@
-DROP DATABASE IF EXISTS qanda;
-CREATE DATABASE qanda;
-USE qanda;
+DROP DATABASE IF EXISTS questionsandanswers;
+CREATE DATABASE questionsandanswers;
+USE questionsandanswers;
+
 -- ---
 -- Table questions
 --
@@ -9,9 +10,9 @@ USE qanda;
 DROP TABLE IF EXISTS questions;
 
 CREATE TABLE questions (
-  question_id INT unsigned AUTO_INCREMENT PRIMARY KEY,
+  question_id SERIAL PRIMARY KEY,
   body VARCHAR(1000) NOT NULL UNIQUE,
-  date DATETIME NOT NULL,
+  date DATETIME NOT NULL DEFAULT GETDATE(),
   name VARCHAR(60) NOT NULL,
   email VARCHAR(60) NOT NULL,
   helpfulness INT NOT NULL DEFAULT 0,
@@ -27,9 +28,9 @@ CREATE TABLE questions (
 DROP TABLE IF EXISTS answers;
 
 CREATE TABLE answers (
-  answer_id INT unsigned AUTO_INCREMENT PRIMARY KEY,
+  answer_id SERIAL PRIMARY KEY,
   body VARCHAR(1000) NOT NULL UNIQUE,
-  date DATETIME NOT NULL,
+  date DATETIME NOT NULL DEFAULT GETDATE(),
   name VARCHAR(60) NOT NULL,
   email VARCHAR(60) NOT NULL,
   helpfulness INT NOT NULL DEFAULT 0,
@@ -45,7 +46,7 @@ CREATE TABLE answers (
 DROP TABLE IF EXISTS photos;
 
 CREATE TABLE photos (
-  photo_id INT unsigned AUTO_INCREMENT PRIMARY KEY,
+  photo_id SERIAL PRIMARY KEY,
   url VARCHAR(500) NOT NULL UNIQUE,
   answer_id INT REFERENCES answers ON DELETE CASCADE
 );
