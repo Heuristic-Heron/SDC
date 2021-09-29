@@ -2,17 +2,6 @@ DROP DATABASE IF EXISTS questionsandanswers;
 CREATE DATABASE questionsandanswers;
 \c questionsandanswers;
 
--- -- ---
--- -- Table product
--- --
--- -- ---
-
--- DROP TABLE IF EXISTS product;
-
-CREATE TABLE products (
-  id SERIAL PRIMARY KEY
-);
-
 -- ---
 -- Table questions
 --
@@ -21,14 +10,14 @@ CREATE TABLE products (
 DROP TABLE IF EXISTS questions;
 
 CREATE TABLE questions (
-  question_id SERIAL PRIMARY KEY,
-  body VARCHAR(1000) NOT NULL UNIQUE,
-  date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  name VARCHAR(60) NOT NULL,
-  email VARCHAR(60) NOT NULL,
-  helpfulness INT NOT NULL DEFAULT 0,
-  reported BOOLEAN NOT NULL DEFAULT false,
-  product_id INT NOT NULL REFERENCES products ON DELETE CASCADE
+  question_id serial PRIMARY KEY,
+  body text CONSTRAINT CHECK (char_length(body <= 1000) NOT NULL UNIQUE,
+  date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  name text CONSTRAINT CHECK (char_length(name) <= 60) NOT NULL,
+  email text CONSTRAINT CHECK (char_length(email) <= 60) NOT NULL,
+  helpfulness int NOT NULL DEFAULT 0,
+  reported boolean NOT NULL DEFAULT false,
+  product_id int NOT NULL,
 );
 
 -- ---
@@ -39,14 +28,14 @@ CREATE TABLE questions (
 DROP TABLE IF EXISTS answers;
 
 CREATE TABLE answers (
-  answer_id SERIAL PRIMARY KEY,
-  body VARCHAR(1000) NOT NULL UNIQUE,
-  date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  name VARCHAR(60) NOT NULL,
-  email VARCHAR(60) NOT NULL,
-  helpfulness INT NOT NULL DEFAULT 0,
-  reported BOOLEAN NOT NULL DEFAULT false,
-  question_id INT NOT NULL REFERENCES questions ON DELETE CASCADE
+  answer_id serial PRIMARY KEY,
+  body text CONSTRAINT CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
+  date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  name text CONSTRAINT CHECK (char_length(name) <= 60) NOT NULL,
+  email text CONSTRAINT CHECK (char_length(email) <= 60) NOT NULL,
+  helpfulness int NOT NULL DEFAULT 0,
+  reported boolean NOT NULL DEFAULT false,
+  question_id int NOT NULL REFERENCES questions ON DELETE CASCADE
 );
 
 -- ---
@@ -57,9 +46,9 @@ CREATE TABLE answers (
 DROP TABLE IF EXISTS photos;
 
 CREATE TABLE photos (
-  photo_id SERIAL PRIMARY KEY,
-  url VARCHAR(500) NOT NULL UNIQUE,
-  answer_id INT NOT NULL REFERENCES answers ON DELETE CASCADE
+  photo_id serial PRIMARY KEY,
+  url text CONSTRAINT CHECK (char_length(url) <= 2083) NOT NULL UNIQUE,
+  answer_id int NOT NULL REFERENCES answers ON DELETE CASCADE
 );
 
 
