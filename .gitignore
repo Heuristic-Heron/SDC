@@ -4,3 +4,4 @@ client/dist/bundle.js.map
 server/config.js
 coverage
 aws-demo.pem
+data/

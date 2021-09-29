@@ -3,52 +3,35 @@ CREATE DATABASE questionsandanswers;
 \c questionsandanswers;
 
 -- ---
--- Table questions
---
+-- CREATE TABLES
 -- ---
-
-DROP TABLE IF EXISTS questions;
 
 CREATE TABLE questions (
   id serial PRIMARY KEY,
-  product_id int NOT NULL
+  product_id int NOT NULL,
   body text CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
   date_written timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  asker_name text CHECK (char_length(name) <= 60) NOT NULL,
-  asker_email text CHECK (char_length(email) <= 60) NOT NULL,
+  asker_name text CHECK (char_length(asker_name) <= 60) NOT NULL,
+  asker_email text CHECK (char_length(asker_email) <= 60) NOT NULL,
   reported boolean NOT NULL DEFAULT false,
-  helpful int NOT NULL DEFAULT 0,
+  helpful int NOT NULL DEFAULT 0
 );
-
--- ---
--- Table answers
---
--- ---
-
-DROP TABLE IF EXISTS answers;
 
 CREATE TABLE answers (
   id serial PRIMARY KEY,
-  question_id int NOT NULL REFERENCES questions ON DELETE CASCADE
+  question_id int NOT NULL REFERENCES questions ON DELETE CASCADE,
   body text CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
   date_written timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  answerer_name text CHECK (char_length(name) <= 60) NOT NULL,
-  answerer_email text CHECK (char_length(email) <= 60) NOT NULL,
+  answerer_name text CHECK (char_length(answerer_name) <= 60) NOT NULL,
+  answerer_email text CHECK (char_length(answerer_email) <= 60) NOT NULL,
   reported boolean NOT NULL DEFAULT false,
-  helpful int NOT NULL DEFAULT 0,
+  helpful int NOT NULL DEFAULT 0
 );
-
--- ---
--- Table photos
---
--- ---
-
-DROP TABLE IF EXISTS photos;
 
 CREATE TABLE photos (
   id serial PRIMARY KEY,
-  answer_id int NOT NULL REFERENCES answers ON DELETE CASCADE
-  url text CHECK (char_length(url) <= 2083) NOT NULL UNIQUE,
+  answer_id int NOT NULL REFERENCES answers ON DELETE CASCADE,
+  url text CHECK (char_length(url) <= 2083) NOT NULL UNIQUE
 );
 
 
@@ -57,7 +40,7 @@ CREATE TABLE photos (
 -- ---
 
 COPY questions(id,product_id,body,date_written,asker_name,asker_email,reported,helpful)
-FROM './data/questions.csv'
+FROM '/Users/katherineyu/bootcamp/SDC/data/questions.csv'
 DELIMITER ','
 CSV HEADER;
 
@@ -70,6 +53,14 @@ COPY photos(id,answer_id,url)
 FROM './data/answers_photos.csv'
 DELIMITER ','
 CSV HEADER;
+
+-- ---
+-- Add Foreign Keys
+-- ---
+-- ALTER TABLE answers ADD FOREIGN KEY question_id int NOT NULL REFERENCES questions ON DELETE CASCADE
+-- ALTER TABLE photos ADD FOREIGN KEY answer_id int NOT NULL REFERENCES answers ON DELETE CASCADE
+
+
 
 
 -- ---
