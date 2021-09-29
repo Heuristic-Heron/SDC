@@ -11,13 +11,13 @@ DROP TABLE IF EXISTS questions;
 
 CREATE TABLE questions (
   question_id serial PRIMARY KEY,
-  body text CONSTRAINT CHECK (char_length(body <= 1000) NOT NULL UNIQUE,
+  body text CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
   date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  name text CONSTRAINT CHECK (char_length(name) <= 60) NOT NULL,
-  email text CONSTRAINT CHECK (char_length(email) <= 60) NOT NULL,
+  name text CHECK (char_length(name) <= 60) NOT NULL,
+  email text CHECK (char_length(email) <= 60) NOT NULL,
   helpfulness int NOT NULL DEFAULT 0,
   reported boolean NOT NULL DEFAULT false,
-  product_id int NOT NULL,
+  product_id int NOT NULL
 );
 
 -- ---
@@ -29,10 +29,10 @@ DROP TABLE IF EXISTS answers;
 
 CREATE TABLE answers (
   answer_id serial PRIMARY KEY,
-  body text CONSTRAINT CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
+  body text CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
   date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  name text CONSTRAINT CHECK (char_length(name) <= 60) NOT NULL,
-  email text CONSTRAINT CHECK (char_length(email) <= 60) NOT NULL,
+  name text CHECK (char_length(name) <= 60) NOT NULL,
+  email text CHECK (char_length(email) <= 60) NOT NULL,
   helpfulness int NOT NULL DEFAULT 0,
   reported boolean NOT NULL DEFAULT false,
   question_id int NOT NULL REFERENCES questions ON DELETE CASCADE
@@ -47,7 +47,7 @@ DROP TABLE IF EXISTS photos;
 
 CREATE TABLE photos (
   photo_id serial PRIMARY KEY,
-  url text CONSTRAINT CHECK (char_length(url) <= 2083) NOT NULL UNIQUE,
+  url text CHECK (char_length(url) <= 2083) NOT NULL UNIQUE,
   answer_id int NOT NULL REFERENCES answers ON DELETE CASCADE
 );
 
