@@ -7,7 +7,8 @@
     "test": "jest",
     "server": "nodemon server.js",
     "transpile": "npx webpack --config webpack.config.js --mode development -w",
-    "lint": "eslint \"**/*.js\" \"**/*.jsx\" --ignore-pattern node_modules/ --ignore-pattern dist/"
+    "lint": "eslint \"**/*.js\" \"**/*.jsx\" --ignore-pattern node_modules/ --ignore-pattern dist/",
+    "katdb": "psql postgres -U katherineyu < qaschema.sql"
   },
   "repository": {
     "type": "git",

@@ -10,7 +10,7 @@ CREATE TABLE questions (
   id serial PRIMARY KEY,
   product_id int NOT NULL,
   body text CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
-  date_written timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  date_written date NOT NULL DEFAULT CURRENT_TIMESTAMP,
   asker_name text CHECK (char_length(asker_name) <= 60) NOT NULL,
   asker_email text CHECK (char_length(asker_email) <= 60) NOT NULL,
   reported boolean NOT NULL DEFAULT false,
@@ -21,7 +21,7 @@ CREATE TABLE answers (
   id serial PRIMARY KEY,
   question_id int NOT NULL REFERENCES questions ON DELETE CASCADE,
   body text CHECK (char_length(body) <= 1000) NOT NULL UNIQUE,
-  date_written timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  date_written date NOT NULL DEFAULT CURRENT_TIMESTAMP,
   answerer_name text CHECK (char_length(answerer_name) <= 60) NOT NULL,
   answerer_email text CHECK (char_length(answerer_email) <= 60) NOT NULL,
   reported boolean NOT NULL DEFAULT false,
@@ -39,20 +39,32 @@ CREATE TABLE photos (
 -- IMPORT DATA
 -- ---
 
+-- Create TEMP TABLE to handle date conversion from 13 digits (in csv file) to 10 digits (sql table)
+BEGIN;
+CREATE TEMP TABLE temp_questions(id int, product_id int,body text, date_written bigint,asker_name text,asker_email text,reported boolean,helpful int);
+COPY temp_questions FROM '/Users/katherineyu/bootcamp/SDC/data/questions.csv' DELIMITER ',' CSV HEADER;
+UPDATE temp_questions SET date_written = date_written / 1000;
+
+COPY questions FROM temp_questions;
+
+COMMIT;
+-- drops the temp table
+
+
 COPY questions(id,product_id,body,date_written,asker_name,asker_email,reported,helpful)
 FROM '/Users/katherineyu/bootcamp/SDC/data/questions.csv'
 DELIMITER ','
 CSV HEADER;
 
-COPY answers(id,question_id,body,date_written,answerer_name,answerer_email,reported,helpful)
-FROM './data/answers.csv'
-DELIMITER ','
-CSV HEADER;
+-- COPY answers(id,question_id,body,date_written,answerer_name,answerer_email,reported,helpful)
+-- FROM '/Users/katherineyu/bootcamp/SDC/data/answers.csv'
+-- DELIMITER ','
+-- CSV HEADER;
 
-COPY photos(id,answer_id,url)
-FROM './data/answers_photos.csv'
-DELIMITER ','
-CSV HEADER;
+-- COPY photos(id,answer_id,url)
+-- FROM '/Users/katherineyu/bootcamp/SDC/data/answers_photos.csv'
+-- DELIMITER ','
+-- CSV HEADER;
 
 -- ---
 -- Add Foreign Keys
