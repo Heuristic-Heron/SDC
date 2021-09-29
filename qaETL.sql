@@ -1,4 +1,5 @@
 --ETL Process to upload data from csv files questions, answers, answers_photos
+\c questionsandanswers;
 
 -- ---
 -- IMPORT QUESTIONS
@@ -13,7 +14,7 @@ SELECT
   id,
   product_id,
   body,
-  to_timestamp(date_written/1000)::date,
+  to_timestamp(date_written/1000)::timestamp,
   asker_name,
   asker_email,
   reported,
@@ -39,7 +40,7 @@ SELECT
   id,
   question_id,
   body,
-  to_timestamp(date_written/1000)::date,
+  to_timestamp(date_written/1000)::timestamp,
   answerer_name,
   answerer_email,
   reported,

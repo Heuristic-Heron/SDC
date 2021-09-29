@@ -8,7 +8,8 @@
     "server": "nodemon server.js",
     "transpile": "npx webpack --config webpack.config.js --mode development -w",
     "lint": "eslint \"**/*.js\" \"**/*.jsx\" --ignore-pattern node_modules/ --ignore-pattern dist/",
-    "katdb": "psql postgres -U katherineyu < qaschema.sql"
+    "katdb": "psql postgres -U katherineyu < qaschema.sql",
+    "katETL": "psql postgres -U katherineyu < qaETL.sql"
   },
   "repository": {
     "type": "git",
