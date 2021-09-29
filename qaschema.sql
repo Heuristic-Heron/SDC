@@ -1,6 +1,6 @@
 DROP DATABASE IF EXISTS questionsandanswers;
 CREATE DATABASE questionsandanswers;
-USE questionsandanswers;
+\c questionsandanswers;
 
 -- -- ---
 -- -- Table product

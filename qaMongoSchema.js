@@ -19,7 +19,7 @@ let QuestionsSchema = new Schema({
   reported: { type: Boolean, required: true, default: false },
   // reference to Product document
   product_id: Schema.Types.ObjectId,
-  // array of references to Answers document
+  // array of references to Answers document (one-to-many)
   answers: [{
     answer_id: Schema.Types.ObjectId
   }],
@@ -36,7 +36,7 @@ let AnswersSchema = new Schema({
   reported: { type: Boolean, required: true, default: false },
   // reference to Questions document
   question_id: Schema.Types.ObjectId,
-  // photos directly embedded in Answers
+  // photos directly embedded in Answers (one-to-few)
   photos: [{
     url: { type: String, required: true, unique: true }
   }],
