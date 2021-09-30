@@ -71,21 +71,32 @@ INSERT INTO photos (url, answer_id)
 -- PUT /qa/questions/:question_id/helpful
 -- Updates a question to show it was found helpful.
 -- Parameter: question_id
+UPDATE questions
+  SET helpful = helpful + 1
+  WHERE id = 3518965;
 
 
 -- Report Question
 -- PUT /qa/questions/:question_id/report
 -- Updates a question to show it was reported. Note, this action does not delete the question, but the question will not be returned in the above GET request.
 -- Parameter: question_id
+UPDATE questions
+  SET reported = true
+  WHERE id = 3518965;
 
 
 -- Mark Answer as Helpful
 -- PUT /qa/answers/:answer_id/helpful
 -- Updates an answer to show it was found helpful.
 -- Parameter: answer_id
-
+UPDATE answers
+  SET helpful = helpful + 1
+  WHERE id = 6879308;
 
 -- Report Answer
 -- PUT /qa/answers/:answer_id/report
 -- Updates an answer to show it has been reported. Note, this action does not delete the answer, but the answer will not be returned in the above GET request.
 -- Parameter: answer_id
+UPDATE answers
+  SET reported = true
+  WHERE id = 6879308;
