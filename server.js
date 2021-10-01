@@ -23,13 +23,20 @@ const axiosConfig = {
 
 
 app.get('/*', (req, res) => {
-
+  // GET /qa/questions
   const { url } = req;
   console.log( 'url', url);
   console.log( 'body',req.body )
   console.log( 'query', req.query )
   console.log( 'params', req.params )
-  //   let splitURL = url.split('/')
+  let splitURL = url.split('/')
+  console.log(splitURL)
+  let id = splitURL[3].slice(1)
+  console.log(id)
+
+
+  // GET /qa/questions/:question_id/answers
+
   //   .filter(char => char !== '');
   //   const firstRoute = splitURL[0];
   //   console.log(firstRoute);
