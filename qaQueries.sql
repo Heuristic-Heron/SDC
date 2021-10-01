@@ -10,6 +10,7 @@ SELECT * FROM answers;
 EXPLAIN ANALYZE
 SELECT * FROM photos;
 
+-- PRIMARY QUERY: QUESTIONS LIST --------------------------------
 -- CREATE Results Table joining questions, answers and photos
 -- Should appear in order of helpfulness (and maybe date?)
 EXPLAIN (ANALYZE, BUFFERS)
@@ -18,28 +19,38 @@ SELECT *
   INNER JOIN answers a ON q.id = a.question_id
   INNER JOIN photos p ON a.id = p.answer_id
   WHERE q.reported = false AND a.reported = false AND product_id = 50000
-  ORDER BY q.product_id ASC, q.helpful DESC, a.helpful DESC
+  ORDER BY q.helpful DESC, a.helpful DESC;
 
-  LIMIT 10;
 
---TRY BELOW WITHOUT ORDER BY - ASSUMING INDEX WILL SORT
-EXPLAIN ANALYZE
+-- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE.
+EXPLAIN (ANALYZE, BUFFERS)
+WITH filtered_answers AS (
+  SELECT *
+  FROM answers a
+  WHERE a.reported = false
+  ORDER BY a.helpful DESC),
+  filtered_questions AS (
+    SELECT *
+    FROM questions q
+    WHERE q.reported = false
+    ORDER BY q.helpful DESC
+  )
 SELECT *
-  FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false
-  ORDER BY q.product_id ASC
-  LIMIT 10;
+  FROM filtered_questions fq
+  INNER JOIN filtered_answers fa ON fq.id = fa.question_id
+  INNER JOIN photos p O0N fa.id = p.answer_id
+  WHERE product_id = 50000;
+  -- ORDER BY q.product_id ASC, q.helpful DESC, a.helpful DESC;
 
-
--- Results table for just answers (would be faster than the question query above)
-EXPLAIN ANALYZE
+------------------------------------------------------------------
+-- ANSWER LIST
+-- Results table for just answers (should be faster than the question query above)
+EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
   FROM answers a
   INNER JOIN photos p ON a.id = p.answer_id
-  WHERE a.reported = false
-  ORDER BY a.question_id ASC, a.helpful DESC;
+  WHERE a.reported = false AND a.question_id = 5
+  ORDER BY a.helpful DESC;
   -- LIMIT 20
 
 -- USE product 50 to test
