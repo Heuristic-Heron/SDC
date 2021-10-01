@@ -20,7 +20,26 @@ const axiosConfig = {
   }
 };
 
+
+
 app.get('/*', (req, res) => {
+
+  const { url } = req;
+  console.log( 'url', url);
+  console.log( 'body',req.body )
+  console.log( 'query', req.query )
+  console.log( 'params', req.params )
+  //   let splitURL = url.split('/')
+  //   .filter(char => char !== '');
+  //   const firstRoute = splitURL[0];
+  //   console.log(firstRoute);
+  //   // switch (firstRoute) {
+  //   //   case ('/qa')
+  //   // }
+
+
+
+
   axios.get(`${API_URL}${req.url}`, axiosConfig)
   .then((response) => {
     res.send(response.data);
