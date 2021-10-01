@@ -6,7 +6,6 @@ const port = 3000;
 const config = require('./server/config.js');
 const { products, productInfo, productStyles, relatedProduct } = require('./productController.js');
 const axios = require('axios');
-const API_URL = 'https://app-hrsei-api.herokuapp.com/api/fec2/hr-sfo';
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
 
