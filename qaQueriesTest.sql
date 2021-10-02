@@ -21,47 +21,68 @@ SELECT *
   WHERE q.reported = false AND a.reported = false AND product_id = 50000
   ORDER BY q.helpful DESC, a.helpful DESC;
 
-
-    -- q.id as 'question_id',
-    -- q.body as 'question_body',
-    -- q.date_written as 'question_date',
-    -- q.asker_name as 'asker_name',
-    -- q.helpful as 'question_helpfulness',
--- Refactor to format required by client:
+-- ALTERNATE IN JSON FORMAT
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT json_build_object(
-  'product_id', q.product_id,
-  'results', (SELECT json_agg(
-    q.id,
-    q.body,
-    q.date_written,
-    q.asker_name,
-    q.helpful,
-    (SELECT JSON_build_object(
-      a.id,
-      JSON_build_object(
+WITH
+photo AS (
+    SELECT answer_id, json_agg(
+      json_build_object(
+        'id', p.id,
+        'url', p.url
+    )) AS photos
+    FROM photos p
+    GROUP BY answer_id
+  ),
+  filtered_answers AS (
+    SELECT id, question_id, json_object_agg(
+      a.id, json_build_object(
         'id', a.id,
         'body', a.body,
         'date', a.date_written,
         'answerer_name', a.answerer_name,
         'helpfulness', a.helpful,
-        'photos', (SELECT json_agg(row_to_json('photo')) FROM photos)
-        --   p.id,
-        --   p.url
-        -- ) FROM photos)
+        'photos', p.photos
+      ))
+    AS answers
+    FROM answers a
+    INNER JOIN photo p ON a.id = p.answer_id
+    WHERE a.reported = false
+    GROUP BY a.id
+    ORDER BY a.helpful DESC
+  ),
+  filtered_questions AS (
+    SELECT product_id,
+      json_build_object(
+        'question_id', q.id,
+        'question_body', q.body,
+        'question_date', q.date_written,
+        'asker_name', q.asker_name,
+        'question_helpfulness', q.helpful,
+        'reported', q.reported,
+        'answers', fa.answers
       )
-    ) as answers FROM answers
-  ))
-  FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false AND product_id = 34
-  GROUP BY q.product_id, q.id, a.id
-  ORDER BY q.helpful DESC, a.helpful DESC
-  LIMIT 5 OFFSET 0);
+      AS results
+      FROM questions q
+      INNER JOIN filtered_answers fa ON q.id = fa.question_id
+      WHERE q.reported = false
+      ORDER BY q.helpful DESC
+  )
+  SELECT product_id, json_agg(fq.results) as results
+  FROM filtered_questions fq
+  WHERE product_id = 50
+  GROUP BY product_id
+
+  --   final_output as (
+  --     SELECT product_id, json_agg(fq.results) as results
+  --     -- SELECT json_object_agg('product_id', product_id, 'results', fr.results)
+
+  --     from filtered_questions fq
+  --     group by fq.product_id
+  -- )
+  -- select * FROM final_output where product_id = 50;
 
 
--- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE.
+-- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE. AND DOES NOT RETURN JSON FORMAT
 EXPLAIN (ANALYZE, BUFFERS)
 WITH filtered_answers AS (
   SELECT *
@@ -77,7 +98,7 @@ WITH filtered_answers AS (
 SELECT *
   FROM filtered_questions fq
   INNER JOIN filtered_answers fa ON fq.id = fa.question_id
-  INNER JOIN photos p O0N fa.id = p.answer_id
+  INNER JOIN photos p ON fa.id = p.answer_id
   WHERE product_id = 50000;
   -- ORDER BY q.product_id ASC, q.helpful DESC, a.helpful DESC;
 
