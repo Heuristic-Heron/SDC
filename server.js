@@ -26,26 +26,44 @@ const axiosConfig = {
 app.get('/*', (req, res) => {
   const { url } = req;
   console.log(url)
+  console.log('params', req.params);
+  console.log('query', req.query);
+
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
   console.log(firstRoute)
   switch (firstRoute) {
     case 'qa':
-      if (url === '/qa/questions/') {
-        const productId = req.query;
-        console.log('productId', productId);
-        getQuestions(productId, (err, data) => {
+      // GET /qa/questions
+      if (url === '/qa/questions') {
+        console.log(req)
+        const { page, count } = req.query;
+        const { product_id } = req.body;
+        let limit;
+        let offset;
+        count ? limit = count : limit = 5;
+        page && page > 1 ? offset = page * limit : offset = 0;
+        console.log('productId', product_id, offset, limit);
+        // const productId = req.query.product_id;
+        getQuestions(product_id, offset, limit, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {
             res.status(200).send(data);
           }
         })
+      // GET /qa/questions/:question_id/answers
       } else {
-        const questionId = splitURL[2].slice(1)
-        console.log('questionId', questionId);
-        getAnswers(questionId, (err, data) => {
+        const { question_id, page, count } = req.query;
+        // const questionId = req.query.question_id;
+        // const questionId = splitURL[2].slice(1)
+        let limit;
+        let offset;
+        count ? limit = count : limit = 5;
+        page && page > 1 ? offset = page * limit : offset = 0;
+        console.log('questionId', question_id, offset, limit);
+        getAnswers(question_id, offset, limit, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {
@@ -53,10 +71,10 @@ app.get('/*', (req, res) => {
           }
         })
       }
-    }
+    default:
+      console.log('no GET request found')
   }
-);
-
+});
 
 
 //   axios.get(`${API_URL}${req.url}`, axiosConfig)
@@ -69,24 +87,133 @@ app.get('/*', (req, res) => {
 // });
 
 app.post('/*', (req, res) => {
-  axios.post(`${API_URL}${req.url}`, req.body, axiosConfig)
-  .then((response) => {
-    res.send(response.status);
-  })
-  .catch((error) => {
-    res.send(`Error making POST request: ${error}`);
-  });
+  const { url } = req;
+  console.log(url)
+  const splitURL = url.split('/')
+  .filter(char => char !== '');
+  const firstRoute = splitURL[0];
+  console.log(firstRoute)
+  switch (firstRoute) {
+    case 'qa':
+      //POST /qa/questions
+      if (url === '/qa/questions/') {
+        const body = req.body.body;
+        const name = req.body.name;
+        const email = req.body.email;
+        const productId = req.body.productId;
+
+        console.log('productId', productId);
+        postQuestion(body, name, email, productId, (err, data) => {
+          if (err) {
+            res.status(404).send(err);
+          } else {
+            res.status(201).send(data);
+          }
+        })
+      //POST /qa/questions/:question_id/answers
+      } else {
+        console.log(req.params);
+        const questionId = splitURL[2].slice(1)
+        const body = req.body.body;
+        const name = req.body.name;
+        const email = req.body.email;
+        // const photos = req.body.photos;
+        console.log('questionId', questionId);
+        postAnswer(body, name, email, questionId, (err, data) => {
+          if (err) {
+            res.status(404).send(err);
+          } else {
+            res.status(201).send(data);
+          }
+        })
+      }
+    default:
+      console.log('no POST request found')
+  }
 });
 
+//   axios.post(`${API_URL}${req.url}`, req.body, axiosConfig)
+//   .then((response) => {
+//     res.send(response.status);
+//   })
+//   .catch((error) => {
+//     res.send(`Error making POST request: ${error}`);
+//   });
+// });
+
 app.put('/*', (req, res) => {
-  axios.put(`${API_URL}${req.url}`, {}, axiosConfig)
-  .then((response) => {
-    res.send(response.status);
-  })
-  .catch((error) => {
-    res.send(`Error making PUT request: ${error}`);
-  });
-});
+  const { url } = req;
+  console.log(url)
+  const splitURL = url.split('/')
+  .filter(char => char !== '');
+  const firstRoute = splitURL[0];
+  console.log(firstRoute)
+  console.log(splitURL[1], splitURL[3])
+  switch (firstRoute) {
+    case 'qa':
+      // PUT requests for questions
+      if (splitURL[1] === 'questions') {
+        const questionId = splitURL[2].slice(1);
+        // PUT /qa/questions/:question_id/helpful
+        if (splitURL[3] === 'helpful') {
+          putQuestionHelpful(questionId, (err, data) => {
+            if (err) {
+              res.status(404).send(err);
+            } else {
+              res.status(204).send(data);
+            }
+          })
+        //PUT /qa/questions/:question_id/report
+        } else if (splitURL[3] === 'report') {
+          putQuestionReport(questionId, (err, data) => {
+            if (err) {
+              res.status(404).send(err);
+            } else {
+              res.status(204).send(data);
+            }
+          })
+        }
+      // PUT requests for answers
+      } else if (splitURL[1] === 'answers') {
+        const answerId = splitURL[2].slice(1);
+        console.log('answerId', answerId);
+        // PUT /qa/answers/:answer_id/helpful
+        if (splitURL[3] === 'helpful') {
+          putAnswerHelpful(answerId, (err, data) => {
+            if (err) {
+              res.status(404).send(err);
+            } else {
+              res.status(204).send(data);
+            }
+          })
+        // PUT /qa/answers/:answer_id/report
+        } else if (splitURL[3] === 'report') {
+          console.log('report')
+          putAnswerReport(answerId, (err, data) => {
+            if (err) {
+              console.log('err', err);
+              res.status(404).send(err);
+            } else {
+              console.log('data', data);
+              res.status(204).send(data);
+            }
+          })
+        }
+      }
+    default:
+      console.log('no PUT request found')
+  }
+})
+
+
+//   axios.put(`${API_URL}${req.url}`, {}, axiosConfig)
+//   .then((response) => {
+//     res.send(response.status);
+//   })
+//   .catch((error) => {
+//     res.send(`Error making PUT request: ${error}`);
+//   });
+// });
 
 //Start Listen
 app.listen(port, () => {
