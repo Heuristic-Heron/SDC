@@ -21,35 +21,44 @@ SELECT *
   WHERE q.reported = false AND a.reported = false AND product_id = 50000
   ORDER BY q.helpful DESC, a.helpful DESC;
 
+
+    -- q.id as 'question_id',
+    -- q.body as 'question_body',
+    -- q.date_written as 'question_date',
+    -- q.asker_name as 'asker_name',
+    -- q.helpful as 'question_helpfulness',
 -- Refactor to format required by client:
 EXPLAIN (ANALYZE, BUFFERS)
-SELECT q.product_id, (SELECT JSON_agg(
-  q.id as question_id,
-  q.body as question_body,
-  q.date_written as question_date,
-  q.asker_name as asker_name,
-  q.helpful as question_helpfulness,
-  (SELECT JSON_build_object(
-    a.id,
+SELECT json_build_object(
+  'product_id', q.product_id,
+  'results', (SELECT json_agg(
+    q.id,
+    q.body,
+    q.date_written,
+    q.asker_name,
+    q.helpful,
     (SELECT JSON_build_object(
-      id, a.id,
-      body, a.body,
-      date, a.date_written,
-      answerer_name, a.answerer_name,
-      helpfulness, a.helpful,
-      photos, (SELECT JSON_agg(
-        p.id as id,
-        p.url as url,
+      a.id,
+      JSON_build_object(
+        'id', a.id,
+        'body', a.body,
+        'date', a.date_written,
+        'answerer_name', a.answerer_name,
+        'helpfulness', a.helpful,
+        'photos', (SELECT json_agg(row_to_json('photo')) FROM photos)
+        --   p.id,
+        --   p.url
+        -- ) FROM photos)
       )
-    )
-  ) as answers
-) as results
+    ) as answers FROM answers
+  ))
   FROM questions q
   INNER JOIN answers a ON q.id = a.question_id
   INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false AND product_id = 50000
+  WHERE q.reported = false AND a.reported = false AND product_id = 34
   GROUP BY q.product_id, q.id, a.id
-  ORDER BY q.helpful DESC, a.helpful DESC;
+  ORDER BY q.helpful DESC, a.helpful DESC
+  LIMIT 5 OFFSET 0);
 
 
 -- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE.

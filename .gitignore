@@ -5,3 +5,4 @@ server/config.js
 coverage
 aws-demo.pem
 data/
+serverFEC.js

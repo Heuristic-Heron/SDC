@@ -21,7 +21,7 @@ module.exports = {
 
     const selectQuestions = {
       text: `SELECT * FROM questions q
-        INNER JOIN answers a ON q.id = a question_id
+        INNER JOIN answers a ON q.id = a.question_id
         INNER JOIN photos p ON a.id = p.answer_id
         WHERE q.reported = false
           AND a.reported = false
