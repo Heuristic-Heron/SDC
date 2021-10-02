@@ -22,8 +22,8 @@ module.exports = {
       text: questionsList,
       values: [product_id, limit, offset, page],
     }
-    console.log('offset', offset)
-    console.log('limit', limit)
+    // console.log('offset', offset)
+    // console.log('limit', limit)
     client.query(selectQuestions, (err, res) => {
       if (err) {
         callback(err.stack)
@@ -39,8 +39,8 @@ module.exports = {
       text: answersList,
       values: [question_id, limit, offset, page],
     }
-    console.log('offset', offset)
-    console.log('limit', limit)
+    // console.log('offset', offset)
+    // console.log('limit', limit)
     client.query(selectAnswers, (err, res) => {
       if (err) {
         callback(err.stack)

@@ -2,15 +2,17 @@
 
 -- General Queries
 EXPLAIN ANALYZE
-SELECT * FROM questions;
+SELECT * FROM questions LIMIT 10;
 
 EXPLAIN ANALYZE
-SELECT * FROM answers;
+SELECT * FROM answers LIMIT 10;
 
 EXPLAIN ANALYZE
-SELECT * FROM photos;
+SELECT * FROM photos LIMIT 10;
 
 -- PRIMARY QUERY: QUESTIONS LIST --------------------------------
+-- Retrieves a list of questions for a particular product. Does not include any reported questions.
+-- Parameters: product_id, page, count
 -- CREATE Results Table joining questions, answers and photos
 -- Should appear in order of helpfulness (and maybe date?)
 EXPLAIN (ANALYZE, BUFFERS)
@@ -76,28 +78,10 @@ photo AS (
   GROUP BY product_id;
 
 
--- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE. AND DOES NOT RETURN JSON FORMAT
-EXPLAIN (ANALYZE, BUFFERS)
-WITH filtered_answers AS (
-  SELECT *
-  FROM answers a
-  WHERE a.reported = false
-  ORDER BY a.helpful DESC),
-  filtered_questions AS (
-    SELECT *
-    FROM questions q
-    WHERE q.reported = false
-    ORDER BY q.helpful DESC
-  )
-SELECT *
-  FROM filtered_questions fq
-  INNER JOIN filtered_answers fa ON fq.id = fa.question_id
-  INNER JOIN photos p ON fa.id = p.answer_id
-  WHERE product_id = 50000;
-  -- ORDER BY q.product_id ASC, q.helpful DESC, a.helpful DESC;
-
 ------------------------------------------------------------------
 -- ANSWER LIST
+-- Retrieves a list of questions for a particular product. Does not include any reported questions.
+-- Parameters: question_id, page, count
 -- Results table for just answers (should be faster than the question query above)
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
@@ -144,34 +128,6 @@ photo AS (
   GROUP BY question_id;
 
 
-  ----------------------------------------------------------------------------------
-
--- Questions List
--- GET /qa/questions
--- Retrieves a list of questions for a particular product. This list does not include any reported questions.
--- Parameters:
--- product_id: Specifies the product for which to retrieve questions.
--- page: Selects the page of results to return. Default 1.
------ Offset 0 = page 1. Offest 5 = page 2. If page = 1, offset = 0.
------ If page > 1, offset is equal to {page} * 5
--- count: Specifies how many results per page to return. Default 5. (LIMIT)
--- EXPLAIN ANALYZE
-SELECT * FROM questions
-  WHERE product_id = 1 AND reported = false
-  ORDER BY date_written DESC
-  LIMIT 5 OFFSET 0;
-
-
--- Answers List
--- GET /qa/questions/:question_id/answers
--- Retrieves a list of questions for a particular product. This list does not include any reported questions.
--- Parameters: question_id, page, count
--- EXPLAIN ANALYZE
-SELECT * FROM answers
-  WHERE question_id = 1 AND reported = false
-  ORDER BY date_written DESC
-  LIMIT 5 OFFSET 0;
-
 -- Query for last 10% of records
 EXPLAIN ANALYZE
 SELECT * FROM answers
@@ -179,38 +135,28 @@ SELECT * FROM answers
   ORDER BY date_written DESC
   LIMIT (SELECT MAX(id) from questons) * 0.1;
 
+----------------------------------------------------------------------------------
 
-
--- Add a Question
 -- POST /qa/questions
 -- Adds a question for the given product
 -- Parameters:  body, name, email, product_id
-
--- need to reset id prior to entering new records
-SELECT setval('questions_id_seq', (SELECT MAX (id) FROM questions)+1);
-
 EXPLAIN ANALYZE
 INSERT INTO questions (body, asker_name, asker_email, product_id)
   VALUES ('Why can I ask this questionag again?', 'testing123', 'test@gmail.com', 2);
 
--- Add an Answer
+
 -- POST /qa/questions/:question_id/answers
 -- Adds an answer for the given question
 -- Parameters: question_id, body, name, email, photos
-
-SELECT setval('answers_id_seq', (SELECT MAX (id) FROM answers)+1);
-
--- need to reset id prior to entering new records
 EXPLAIN (ANALYZE, BUFFERS)
 INSERT INTO answers (body, answerer_name, answerer_email, question_id)
   VALUES ('This is the only answer', 'testing123', 'test@gmail.com', 2);
 
 
-SELECT setval('photos_id_seq', (SELECT MAX (id) FROM photos)+1);
-
 EXPLAIN (ANALYZE, BUFFERS)
 INSERT INTO photos (url, answer_id)
   VALUES ('testurl.com', 2);
+
 
 -- Mark Question as Helpful
 -- PUT /qa/questions/:question_id/helpful
@@ -224,7 +170,8 @@ UPDATE questions
 
 -- Report Question
 -- PUT /qa/questions/:question_id/report
--- Updates a question to show it was reported. Note, this action does not delete the question, but the question will not be returned in the above GET request.
+-- Updates a question to show it was reported.
+-- Note, this action does not delete the question, but the question will not be returned in the above GET request.
 -- Parameter: question_id
 EXPLAIN ANALYZE
 UPDATE questions
@@ -253,9 +200,16 @@ UPDATE answers
 
 
 ----
---ADD / DROP INDEXES
+-- ADD / DROP INDEXES
 ----
--- This set did nothing to improve speed
+-- FINAL: PARTIAL INDEXES ----------------------------------------------------
+CREATE INDEX ON questions (product_id ASC, helpful DESC) WHERE reported=false;
+CREATE INDEX ON answers (question_id ASC, helpful DESC) WHERE reported=false;
+CREATE INDEX ON photos (answer_id ASC);
+
+
+
+-- IGNORE BELOW: they did not improve speed  -----------------------------
 CREATE INDEX ON questions (product_id);
 CREATE INDEX ON questions (helpful);
 
@@ -269,7 +223,7 @@ CREATE INDEX ON questions (helpful DESC);
 DROP INDEX questions_helpful_idx;
 
 
--- Try creating index on answers
+-- Indexes on answers
 CREATE INDEX ON answers (question_id);
 DROP INDEX answers_question_id_idx;
 
@@ -291,10 +245,7 @@ DROP INDEX answers_question_id_idx;
 CREATE INDEX ON questions (product_id);
 DROP INDEX questions_product_id_idx;
 
-------- TRY COMBO INDEXS
---CURRENT:
-CREATE INDEX ON questions (product_id);
---ADD:
+------- COMBO INDEXES TRIED -----------------------------
 CREATE INDEX ON questions (product_id ASC, helpful DESC);
 CREATE INDEX ON answers (question_id ASC, helpful DESC);
 CREATE INDEX ON photos (answer_id ASC);
@@ -303,10 +254,3 @@ CREATE INDEX ON photos (answer_id ASC);
 DROP INDEX questions_product_id_helpful_idx;
 DROP INDEX answers_question_id_helpful_idx;
 DROP INDEX photos_answer_id_idx;
-
-
-
------- TRY PARTIAL INDEXES
-CREATE INDEX ON questions (product_id ASC, helpful DESC) WHERE reported=false;
-CREATE INDEX ON answers (question_id ASC, helpful DESC) WHERE reported=false;
-CREATE INDEX ON photos (answer_id ASC);

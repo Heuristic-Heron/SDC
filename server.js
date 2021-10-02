@@ -7,7 +7,6 @@ const config = require('./server/config.js');
 const { getQuestions, getAnswers, postQuestion, postAnswer, putQuestionHelpful, putAnswerHelpful, putQuestionReport, putAnswerReport } = require('./qaRoutes.js');
 
 
-
 app.use(express.static(path.join(__dirname, "/client/dist")));
 
 app.use(express.json());
@@ -37,9 +36,7 @@ app.get('/*', (req, res) => {
         } else {
           offset = page * limit;
         }
-        // !page ? page = 1 : page = page;
-        // page > 1 ? offset = page * limit : offset = 0;
-        console.log('questionId:', question_id, 'limit:', limit, 'offset:', offset);
+        // console.log('questionId:', question_id, 'limit:', limit, 'offset:', offset);
         getAnswers(question_id, limit, offset, page, (err, data) => {
           if (err) {
             res.status(404).send(err);
@@ -59,7 +56,7 @@ app.get('/*', (req, res) => {
       } else {
         offset = page * limit;
       }
-      console.log('productId:', product_id, 'limit:', limit, 'offset:', offset);
+      // console.log('productId:', product_id, 'limit:', limit, 'offset:', offset);
       getQuestions(product_id, limit, offset, page, (err, data) => {
         if (err) {
           res.status(404).send(err);
