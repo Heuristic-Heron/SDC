@@ -1,6 +1,7 @@
 // require('./qaConnection.js');
 const { Pool, Client } = require('pg');
 const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./server/config.js');
+const { questionsList, answersList } = require('./qaQueries.js');
 
 const client = new Client({
   user: POSTGRES_USER,
@@ -20,15 +21,17 @@ module.exports = {
   getQuestions: function(product_id, offset, limit, callback) {
 
     const selectQuestions = {
-      text: `SELECT * FROM questions q
-        INNER JOIN answers a ON q.id = a.question_id
-        INNER JOIN photos p ON a.id = p.answer_id
-        WHERE q.reported = false
-          AND a.reported = false
-          AND product_id = $1
-        ORDER BY q.helpful DESC, a.helpful DESC
-        LIMIT $3 OFFSET $2`,
-      values: [product_id, offset, limit],
+      text: questionsList,
+
+      // `SELECT * FROM questions q
+      //   INNER JOIN answers a ON q.id = a.question_id
+      //   INNER JOIN photos p ON a.id = p.answer_id
+      //   WHERE q.reported = false
+      //     AND a.reported = false
+      //     AND product_id = $1
+      //   ORDER BY q.helpful DESC, a.helpful DESC
+      //   LIMIT $2 OFFSET $3`,
+      values: [product_id, limit, offset],
     }
     console.log('offset', offset)
     console.log('limit', limit)
@@ -43,15 +46,17 @@ module.exports = {
   },
 
   // GET Answers List
-  getAnswers: function(question_id, offset, limit, callback) {
+  getAnswers: function(question_id, limit, offset, callback) {
     const selectAnswers = {
-      text: `SELECT * FROM answers a
-        INNER JOIN photos p ON a.id = p.answer_id
-        WHERE a.reported = false
-          AND a.question_id = ($1)
-        ORDER BY a.helpful DESC
-        LIMIT ($3) OFFSET ($2)`,
-      values: [question_id, offset, limit],
+      text: answersList,
+
+      // `SELECT * FROM answers a
+      //   INNER JOIN photos p ON a.id = p.answer_id
+      //   WHERE a.reported = false
+      //     AND a.question_id = ($1)
+      //   ORDER BY a.helpful DESC
+      //   LIMIT ($2) OFFSET ($3)`,
+      values: [question_id, limit, offset],
     }
     console.log('offset', offset)
     console.log('limit', limit)

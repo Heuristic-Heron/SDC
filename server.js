@@ -35,9 +35,9 @@ app.get('/*', (req, res) => {
         let offset;
         count ? limit = count : limit = 5;
         page && page > 1 ? offset = page * limit : offset = 0;
-        console.log('productId', product_id, offset, limit);
+        console.log('productId', product_id, limit, offset);
         // const productId = req.query.product_id;
-        getQuestions(product_id, offset, limit, (err, data) => {
+        getQuestions(product_id, limit, offset, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {
@@ -53,8 +53,8 @@ app.get('/*', (req, res) => {
         let offset;
         count ? limit = count : limit = 5;
         page && page > 1 ? offset = page * limit : offset = 0;
-        console.log('questionId', question_id, offset, limit);
-        getAnswers(question_id, offset, limit, (err, data) => {
+        console.log('questionId', question_id, limit, offset);
+        getAnswers(question_id, limit, offset, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {

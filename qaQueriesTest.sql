@@ -48,7 +48,7 @@ photo AS (
     INNER JOIN photo p ON a.id = p.answer_id
     WHERE a.reported = false
     GROUP BY a.id
-    ORDER BY a.helpful DESC
+    -- ORDER BY a.helpful DESC
   ),
   filtered_questions AS (
     SELECT product_id,
@@ -65,21 +65,12 @@ photo AS (
       FROM questions q
       INNER JOIN filtered_answers fa ON q.id = fa.question_id
       WHERE q.reported = false
-      ORDER BY q.helpful DESC
+      -- ORDER BY q.helpful DESC
   )
   SELECT product_id, json_agg(fq.results) as results
   FROM filtered_questions fq
   WHERE product_id = 50
-  GROUP BY product_id
-
-  --   final_output as (
-  --     SELECT product_id, json_agg(fq.results) as results
-  --     -- SELECT json_object_agg('product_id', product_id, 'results', fr.results)
-
-  --     from filtered_questions fq
-  --     group by fq.product_id
-  -- )
-  -- select * FROM final_output where product_id = 50;
+  GROUP BY product_id;
 
 
 -- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE. AND DOES NOT RETURN JSON FORMAT
@@ -113,13 +104,41 @@ SELECT *
   ORDER BY a.helpful DESC;
   -- LIMIT 20
 
--- USE product 50 to test
-SELECT *
-  FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE product_id = 50
-  LIMIT 5
+-- ALTERNATE IN JSON FORMAT
+EXPLAIN (ANALYZE, BUFFERS)
+WITH
+photo AS (
+    SELECT answer_id, json_agg(
+      json_build_object(
+        'id', p.id,
+        'url', p.url
+    )) AS photos
+    FROM photos p
+    GROUP BY answer_id
+  ),
+  filtered_answers AS (
+    SELECT a.question_id,
+      json_build_object(
+        'answer_id', a.id,
+        'body', a.body,
+        'date', a.date_written,
+        'answerer_name', a.answerer_name,
+        'helpfulness', a.helpful,
+        'photos', p.photos
+      )
+    AS results
+    FROM answers a
+    INNER JOIN photo p ON a.id = p.answer_id
+    WHERE a.reported = false
+    -- ORDER BY a.helpful DESC
+  )
+  SELECT question_id, json_agg(fa.results) as results
+  FROM filtered_answers fa
+  WHERE question_id = 1
+  GROUP BY question_id;
+
+
+  ----------------------------------------------------------------------------------
 
 -- Questions List
 -- GET /qa/questions
