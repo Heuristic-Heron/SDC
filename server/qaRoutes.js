@@ -1,6 +1,6 @@
 // require('./qaConnection.js');
 const { Pool, Client } = require('pg');
-const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./server/config.js');
+const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./config.js');
 const { questionsList, answersList } = require('./qaQueries.js');
 
 const client = new Client({

@@ -15,15 +15,8 @@ SELECT * FROM photos LIMIT 10;
 -- Parameters: product_id, page, count
 -- CREATE Results Table joining questions, answers and photos
 -- Should appear in order of helpfulness (and maybe date?)
-EXPLAIN (ANALYZE, BUFFERS)
-SELECT *
-  FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false AND product_id = 50000
-  ORDER BY q.helpful DESC, a.helpful DESC;
 
--- ALTERNATE IN JSON FORMAT
+-- JSON FORMAT
 EXPLAIN (ANALYZE, BUFFERS)
 WITH
 photo AS (
@@ -66,7 +59,7 @@ photo AS (
       AS results
       FROM questions q
       INNER JOIN filtered_answers fa ON q.id = fa.question_id
-      WHERE q.reported = false
+      WHERE q.reported = false AND q.product_id = 2
       -- ORDER BY q.helpful DESC
   )
   SELECT product_id,
@@ -74,8 +67,56 @@ photo AS (
     '5'::int as count,
     json_agg(fq.results) as results
   FROM filtered_questions fq
-  WHERE product_id = 50
   GROUP BY product_id;
+
+-- FAST QUERY BUT NOT IN THE DESIRED JSON FORMAT
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+  FROM questions q
+  INNER JOIN answers a ON q.id = a.question_id
+  INNER JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported = false AND a.reported = false AND product_id = 2
+  ORDER BY q.helpful DESC, a.helpful DESC;
+
+
+
+-- COMBO QUERY
+EXPLAIN (ANALYZE, BUFFERS)
+ SELECT product_id,
+  '1'::int as page,
+  '5'::int as count,
+  json_agg(
+    json_build_object(
+    'question_id', q.id,
+    'question_body', q.body,
+    'question_date', q.date_written,
+    'asker_name', q.asker_name,
+    'question_helpfulness', q.helpful,
+    'reported', q.reported,
+    'answers', json_build_object(
+      a.id, json_build_object(
+        'id', a.id,
+        'body', a.body,
+        'date', a.date_written,
+        'answerer_name', a.answerer_name,
+        'helpfulness', a.helpful,
+        'photos',
+          json_build_object(
+            'id', p.id,
+            'url', p.url
+        )
+      ))
+    )
+  ) as results
+  FROM questions q
+  INNER JOIN answers a ON q.id = a.question_id
+  INNER JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported = false AND a.reported = false AND product_id = 2
+  GROUP BY product_id, q.id, a.id
+  ORDER BY q.helpful DESC, a.helpful DESC;
+
+
+
 
 
 ------------------------------------------------------------------
@@ -124,7 +165,7 @@ photo AS (
     '5'::int as count,
     json_agg(fa.results) as results
   FROM filtered_answers fa
-  WHERE question_id = 1
+  WHERE question_id = 34
   GROUP BY question_id;
 
 

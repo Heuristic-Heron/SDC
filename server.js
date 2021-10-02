@@ -4,7 +4,7 @@ const compression = require('compression')
 const app = express();
 const port = 3000;
 const config = require('./server/config.js');
-const { getQuestions, getAnswers, postQuestion, postAnswer, putQuestionHelpful, putAnswerHelpful, putQuestionReport, putAnswerReport } = require('./qaRoutes.js');
+const { getQuestions, getAnswers, postQuestion, postAnswer, putQuestionHelpful, putAnswerHelpful, putQuestionReport, putAnswerReport } = require('./server/qaRoutes.js');
 
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
