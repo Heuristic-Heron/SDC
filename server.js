@@ -16,54 +16,58 @@ app.use(compression());
 
 app.get('/*', (req, res) => {
   const { url } = req;
-  console.log(url)
+  console.log('url', url)
   console.log('params', req.params);
   console.log('query', req.query);
 
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
-  console.log(firstRoute)
   switch (firstRoute) {
     case 'qa':
-      // GET /qa/questions
-      if (url === '/qa/questions') {
-        console.log(req)
-        const { page, count } = req.query;
-        const { product_id } = req.body;
-        let limit;
+      // AnswerList: GET /qa/questions/:question_id/answers
+      if (splitURL[3] === 'answers') {
+        const question_id = splitURL[2].slice(1)
+        let { page, count } = req.query;
+        let limit = count ? count : 5;
         let offset;
-        count ? limit = count : limit = 5;
-        page && page > 1 ? offset = page * limit : offset = 0;
-        console.log('productId', product_id, limit, offset);
-        // const productId = req.query.product_id;
-        getQuestions(product_id, limit, offset, (err, data) => {
+        if (!page || page === '1') {
+          page = 1;
+          offset = 0;
+        } else {
+          offset = page * limit;
+        }
+        // !page ? page = 1 : page = page;
+        // page > 1 ? offset = page * limit : offset = 0;
+        console.log('questionId:', question_id, 'limit:', limit, 'offset:', offset);
+        getAnswers(question_id, limit, offset, page, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {
             res.status(200).send(data);
           }
-        })
-      // GET /qa/questions/:question_id/answers
+        });
+     // QuestionList: GET /qa/questions
+     // qa/questions?product_id=${product_id}&page=1&count=99`)
+     } else {
+      let { product_id, page, count } = req.query;
+      let limit = count ? count : 5;
+      let offset;
+      if (!page || page === '1') {
+        page = 1;
+        offset = 0;
       } else {
-        const { question_id, page, count } = req.query;
-        // const questionId = req.query.question_id;
-        // const questionId = splitURL[2].slice(1)
-        let limit;
-        let offset;
-        count ? limit = count : limit = 5;
-        page && page > 1 ? offset = page * limit : offset = 0;
-        console.log('questionId', question_id, limit, offset);
-        getAnswers(question_id, limit, offset, (err, data) => {
-          if (err) {
-            res.status(404).send(err);
-          } else {
-            res.status(200).send(data);
-          }
-        })
+        offset = page * limit;
       }
-    default:
-      console.log('no GET request found')
+      console.log('productId:', product_id, 'limit:', limit, 'offset:', offset);
+      getQuestions(product_id, limit, offset, page, (err, data) => {
+        if (err) {
+          res.status(404).send(err);
+        } else {
+          res.status(200).send(data);
+        }
+      })
+    }
   }
 });
 

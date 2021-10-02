@@ -67,7 +67,10 @@ photo AS (
       WHERE q.reported = false
       -- ORDER BY q.helpful DESC
   )
-  SELECT product_id, json_agg(fq.results) as results
+  SELECT product_id,
+    '1'::int as page,
+    '5'::int as count,
+    json_agg(fq.results) as results
   FROM filtered_questions fq
   WHERE product_id = 50
   GROUP BY product_id;
@@ -132,7 +135,10 @@ photo AS (
     WHERE a.reported = false
     -- ORDER BY a.helpful DESC
   )
-  SELECT question_id, json_agg(fa.results) as results
+  SELECT question_id,
+    '1'::int as page,
+    '5'::int as count,
+    json_agg(fa.results) as results
   FROM filtered_answers fa
   WHERE question_id = 1
   GROUP BY question_id;

@@ -15,27 +15,15 @@ client.connect()
 
 module.exports = {
 
-  // json_agg
-  // json_build_object
   // GET Question List
-  getQuestions: function(product_id, offset, limit, callback) {
+  getQuestions: function(product_id, limit, offset, page, callback) {
 
     const selectQuestions = {
       text: questionsList,
-
-      // `SELECT * FROM questions q
-      //   INNER JOIN answers a ON q.id = a.question_id
-      //   INNER JOIN photos p ON a.id = p.answer_id
-      //   WHERE q.reported = false
-      //     AND a.reported = false
-      //     AND product_id = $1
-      //   ORDER BY q.helpful DESC, a.helpful DESC
-      //   LIMIT $2 OFFSET $3`,
-      values: [product_id, limit, offset],
+      values: [product_id, limit, offset, page],
     }
     console.log('offset', offset)
     console.log('limit', limit)
-    console.log(selectQuestions.text)
     client.query(selectQuestions, (err, res) => {
       if (err) {
         callback(err.stack)
@@ -46,21 +34,13 @@ module.exports = {
   },
 
   // GET Answers List
-  getAnswers: function(question_id, limit, offset, callback) {
+  getAnswers: function(question_id, limit, offset, page, callback) {
     const selectAnswers = {
       text: answersList,
-
-      // `SELECT * FROM answers a
-      //   INNER JOIN photos p ON a.id = p.answer_id
-      //   WHERE a.reported = false
-      //     AND a.question_id = ($1)
-      //   ORDER BY a.helpful DESC
-      //   LIMIT ($2) OFFSET ($3)`,
-      values: [question_id, limit, offset],
+      values: [question_id, limit, offset, page],
     }
     console.log('offset', offset)
     console.log('limit', limit)
-    console.log(selectAnswers.text)
     client.query(selectAnswers, (err, res) => {
       if (err) {
         callback(err.stack)
