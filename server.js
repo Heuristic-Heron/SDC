@@ -5,6 +5,8 @@ const app = express();
 const port = 3000;
 const config = require('./server/config.js');
 const axios = require('axios');
+const { getQuestions, getAnswers, postQuestion, postAnswer, putQuestionHelpful, putAnswerHelpful, putQuestionReport, putAnswerReport } = require('./qaRoutes.js');
+
 const API_URL = 'https://app-hrsei-api.herokuapp.com/api/fec2/hr-sfo';
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
@@ -23,38 +25,48 @@ const axiosConfig = {
 
 
 app.get('/*', (req, res) => {
-  // GET /qa/questions
   const { url } = req;
-  console.log( 'url', url);
-  console.log( 'body',req.body )
-  console.log( 'query', req.query )
-  console.log( 'params', req.params )
-  let splitURL = url.split('/')
-  console.log(splitURL)
-  let id = splitURL[3].slice(1)
-  console.log(id)
+  const splitURL = url.split('/')
+  .filter(char => char !== '');
+  const firstRoute = splitURL[0];
+  console.log(firstRoute)
+  switch (firstRoute) {
+    case 'qa':
+      if (url === '/qa/questions') {
+        const productId = req.body.id;
+        console.log('productId', productId);
+        getQuestions(productId, (err, data) => {
+          if (err) {
+            res.status(404).send(err);
+          } else {
+            res.status(200).send(data);
+          }
+        })
+      } else {
+        const questionId = splitURL[2].slice(1)
+        console.log('questionId', questionId);
+        getAnswers(questionId, (err, data) => {
+          if (err) {
+            res.status(404).send(err);
+          } else {
+            res.status(200).send(data);
+          }
+        })
+      }
+    }
+  }
+);
 
 
-  // GET /qa/questions/:question_id/answers
 
-  //   .filter(char => char !== '');
-  //   const firstRoute = splitURL[0];
-  //   console.log(firstRoute);
-  //   // switch (firstRoute) {
-  //   //   case ('/qa')
-  //   // }
-
-
-
-
-  axios.get(`${API_URL}${req.url}`, axiosConfig)
-  .then((response) => {
-    res.send(response.data);
-  })
-  .catch((error) => {
-    res.sendFile(__dirname + '/client/dist/404page.html');
-  })
-});
+//   axios.get(`${API_URL}${req.url}`, axiosConfig)
+//   .then((response) => {
+//     res.send(response.data);
+//   })
+//   .catch((error) => {
+//     res.sendFile(__dirname + '/client/dist/404page.html');
+//   })
+// });
 
 app.post('/*', (req, res) => {
   axios.post(`${API_URL}${req.url}`, req.body, axiosConfig)

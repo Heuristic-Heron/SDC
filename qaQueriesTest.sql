@@ -21,6 +21,36 @@ SELECT *
   WHERE q.reported = false AND a.reported = false AND product_id = 50000
   ORDER BY q.helpful DESC, a.helpful DESC;
 
+-- Refactor to format required by client:
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT q.product_id, (SELECT JSON_agg(
+  q.id as question_id,
+  q.body as question_body,
+  q.date_written as question_date,
+  q.asker_name as asker_name,
+  q.helpful as question_helpfulness,
+  (SELECT JSON_build_object(
+    a.id,
+    (SELECT JSON_build_object(
+      id, a.id,
+      body, a.body,
+      date, a.date_written,
+      answerer_name, a.answerer_name,
+      helpfulness, a.helpful,
+      photos, (SELECT JSON_agg(
+        p.id as id,
+        p.url as url,
+      )
+    )
+  ) as answers
+) as results
+  FROM questions q
+  INNER JOIN answers a ON q.id = a.question_id
+  INNER JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported = false AND a.reported = false AND product_id = 50000
+  GROUP BY q.product_id, q.id, a.id
+  ORDER BY q.helpful DESC, a.helpful DESC;
+
 
 -- Version 2: DO NOT USE. MUCH SLOWER THAN ABOVE.
 EXPLAIN (ANALYZE, BUFFERS)
