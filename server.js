@@ -23,17 +23,17 @@ const axiosConfig = {
 };
 
 
-
 app.get('/*', (req, res) => {
   const { url } = req;
+  console.log(url)
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
   console.log(firstRoute)
   switch (firstRoute) {
     case 'qa':
-      if (url === '/qa/questions') {
-        const productId = req.body.id;
+      if (url === '/qa/questions/') {
+        const productId = req.query;
         console.log('productId', productId);
         getQuestions(productId, (err, data) => {
           if (err) {
