@@ -4,13 +4,11 @@ import { sleep } from 'k6';
 export let options = {
   stages: [
     { duration: '5s', target: 1 }, // below normal load
-    { duration: '10s', target: 10 },
-    { duration: '10s', target: 20 }, // normal load
-    { duration: '10s', target: 100 },
-    { duration: '10s', target: 200 }, // around the breaking point
-    { duration: '10s', target: 500 },
-    { duration: '10s', target: 1000 }, // beyond the breaking point
-    { duration: '10s', target: 0 }, // scale down. Recovery stage.
+    { duration: '10s', target: 50 }, // normal load
+    { duration: '10s', target: 100 }, // around the breaking point
+    // { duration: '10s', target: 500 },
+    // { duration: '10s', target: 1000 }, // beyond the breaking point
+    // { duration: '10s', target: 0 }, // scale down. Recovery stage.
   ],
   thresholds: {
     http_req_failed: ['rate<0.01'], // errors less than 1%
@@ -41,18 +39,30 @@ export default function () {
       null,
       { tags: { name: 'AnswerList' } },
     ],
-    // [
-    //   'GET',
-    //   `${BASE_URL}/public/crocodiles/3/`,
-    //   null,
-    //   { tags: { name: 'PublicCrocs' } },
-    // ],
-    // [
-    //   'GET',
-    //   `${BASE_URL}/public/crocodiles/4/`,
-    //   null,
-    //   { tags: { name: 'PublicCrocs' } },
-    // ],
+    [
+      'PUT',
+      `${BASE_URL}/qa/questions/:${id}/helpful`,
+      null,
+      { tags: { name: 'Helpful Question' } },
+    ],
+    [
+      'PUT',
+      `${BASE_URL}/qa/answers/:${id}/helpful`,
+      null,
+      { tags: { name: 'Helpful Answer' } },
+    ],
+    [
+      'PUT',
+      `${BASE_URL}/qa/questions/:${id}/report`,
+      null,
+      { tags: { name: 'Report Question' } },
+    ],
+    [
+      'PUT',
+      `${BASE_URL}/qa/answers/:${id}/report`,
+      null,
+      { tags: { name: 'Report Answer' } },
+    ],
   ]);
 
   sleep(SLEEP_DURATION);
