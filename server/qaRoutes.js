@@ -96,7 +96,6 @@ module.exports = {
       if (err) {
         callback(err)
       } else {
-        console.log(updateQuestionHelpful)
         callback(null, res)
       }
     })
@@ -114,7 +113,6 @@ module.exports = {
       if (err) {
         callback(err)
       } else {
-        console.log(res)
         callback(null, res)
       }
     })

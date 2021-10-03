@@ -3,12 +3,11 @@ import { sleep } from 'k6';
 
 export let options = {
   stages: [
-    { duration: '5s', target: 1 }, // below normal load
-    { duration: '10s', target: 50 }, // normal load
-    { duration: '10s', target: 100 }, // around the breaking point
-    // { duration: '10s', target: 500 },
-    // { duration: '10s', target: 1000 }, // beyond the breaking point
-    // { duration: '10s', target: 0 }, // scale down. Recovery stage.
+    { duration: '5s', target: 10 }, // below normal load
+    { duration: '10s', target: 200 }, // normal load
+    { duration: '10s', target: 800 }, // around the breaking point
+    { duration: '10s', target: 1000 }, // beyond the breaking point
+    { duration: '10s', target: 0 }, // scale down. Recovery stage.
   ],
   thresholds: {
     http_req_failed: ['rate<0.01'], // errors less than 1%
