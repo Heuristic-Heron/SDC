@@ -69,4 +69,32 @@ const answersList  =
     GROUP BY question_id
     LIMIT $2 OFFSET $3`
 
-module.exports = { questionsList, answersList }
+const insertQuestion =
+  `INSERT INTO questions (body, asker_name, asker_email, product_id)
+  VALUES ($1, $2, $3, $4)`
+
+const insertAnswer =
+  `INSERT INTO questions(body, answerer_name, answerer_email, question_id)
+  VALUES ($1, $2, $3, $4)`
+
+const helpfulQuestion =
+  `UPDATE questions
+  SET helpful = helpful + 1
+  WHERE id = $1)`
+
+const helpfulAnswer =
+  `UPDATE questions
+  SET helpful = helpful + 1
+  WHERE id = $1`
+
+const reportQuestion =
+  `UPDATE questions
+  SET reported = true
+  WHERE id = $1`
+
+const reportAnswer =
+  `UPDATE questions
+  SET reported = true
+  WHERE id = $1`
+
+module.exports = { questionsList, answersList, insertQuestion, insertAnswer, helpfulQuestion, helpfulAnswer, reportQuestion, reportAnswer }

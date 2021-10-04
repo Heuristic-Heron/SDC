@@ -1,7 +1,7 @@
 // require('./qaConnection.js');
 const { Pool, Client } = require('pg');
 const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./config.js');
-const { questionsList, answersList } = require('./qaQueries.js');
+const { questionsList, answersList, insertQuestion, insertAnswer, helpfulQuestion, helpfulAnswer, reportQuestion, reportAnswer } = require('./qaQueries.js');
 
 const client = new Client({
   user: POSTGRES_USER,
@@ -18,13 +18,13 @@ module.exports = {
   // GET Question List
   getQuestions: function(product_id, limit, offset, page, callback) {
 
-    const selectQuestions = {
+    const questionsListQuery = {
       text: questionsList,
       values: [product_id, limit, offset, page],
     }
     // console.log('offset', offset)
     // console.log('limit', limit)
-    client.query(selectQuestions, (err, res) => {
+    client.query(questionsListQuery, (err, res) => {
       if (err) {
         callback(err.stack)
       } else {
@@ -35,13 +35,13 @@ module.exports = {
 
   // GET Answers List
   getAnswers: function(question_id, limit, offset, page, callback) {
-    const selectAnswers = {
+    const answersListQuery = {
       text: answersList,
       values: [question_id, limit, offset, page],
     }
     // console.log('offset', offset)
     // console.log('limit', limit)
-    client.query(selectAnswers, (err, res) => {
+    client.query(answersListQuery, (err, res) => {
       if (err) {
         callback(err.stack)
       } else {
@@ -52,13 +52,11 @@ module.exports = {
 
   // POST Question
   postQuestion: function(body, asker_name, asker_email, product_id, callback) {
-    const insertQuestion = {
-      text: `INSERT INTO questions (body, asker_name, asker_email, product_id)
-        VALUES ($1, $2, $3, $4)`,
+    const insertQuestionQuery = {
+      text: insertQuestion,
       values: [body, asker_name, asker_email, product_id],
     }
-
-    client.query(insertQuestion, (err, res) => {
+    client.query(insertQuestionQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -69,13 +67,11 @@ module.exports = {
 
   // POST Answer
   postAnswer: function(body, answerer_name, answerer_email, question_id, callback) {
-    const insertAnswer = {
-      text: `INSERT INTO questions(body, answerer_name, answerer_email, question_id)
-        VALUES ($1, $2, $3, $4)`,
+    const insertAnswerQuery = {
+      text: insertAnswer,
       values: [body, answerer_name, answerer_email, question_id],
     }
-
-    client.query(insertAnswer, (err, res) => {
+    client.query(insertAnswerQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -87,12 +83,11 @@ module.exports = {
   // PUT Question - Helpful
   putQuestionHelpful: function(question_id, callback) {
     console.log('helpful', question_id)
-    const updateQuestionHelpful = {
-      text: 'UPDATE questions SET helpful = helpful + 1 WHERE id = ($1)',
+    const helpfulQuestionQuery = {
+      text: helpfulQuestion,
       values: [question_id],
     }
-
-    client.query(updateQuestionHelpful, (err, res) => {
+    client.query(helpfulQuestionQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -104,12 +99,11 @@ module.exports = {
   // PUT Answer - Helpful
   putAnswerHelpful: function(answer_id, callback) {
     console.log('called PUT request with', answer_id);
-    const updateAnswerHelpful = {
-      text: 'UPDATE questions SET helpful = helpful + 1 WHERE id = $1',
+    const helpfulAnswerQuery = {
+      text: helpfulAnswer,
       values: [answer_id],
     }
-
-    client.query(updateAnswerHelpful, (err, res) => {
+    client.query(helpfulAnswerQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -120,12 +114,11 @@ module.exports = {
 
   // PUT Question - Report
   putQuestionReport: function(question_id, callback) {
-    const updateQuestionReport = {
-      text: 'UPDATE questions SET reported = true WHERE id = $1',
+    const reportQuestionQuery = {
+      text: reportQuestion,
       values: [question_id],
     }
-
-    client.query(updateQuestionReport, (err, res) => {
+    client.query(reportQuestionQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -136,12 +129,11 @@ module.exports = {
 
   // PUT Answer - Report
   putAnswerReport: function(answer_id, callback) {
-    const updateAnswerReport = {
-      text: 'UPDATE questions SET reported = true WHERE id = $1',
+    const reportAnswerQuery = {
+      text: reportAnswer,
       values: [answer_id],
     }
-
-    client.query(updateAnswerReport, (err, res) => {
+    client.query(reportAnswerQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {

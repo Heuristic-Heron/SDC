@@ -40,8 +40,8 @@ photo AS (
       ))
     AS answers
     FROM answers a
-    INNER JOIN photo p ON a.id = p.answer_id
-    WHERE a.reported = false
+    FULL JOIN photo p ON a.id = p.answer_id
+    WHERE a.reported IS NOT TRUE
     GROUP BY a.id
     -- ORDER BY a.helpful DESC
   ),
@@ -58,8 +58,8 @@ photo AS (
       )
       AS results
       FROM questions q
-      INNER JOIN filtered_answers fa ON q.id = fa.question_id
-      WHERE q.reported = false AND q.product_id = 2
+      FULL JOIN filtered_answers fa ON q.id = fa.question_id
+      WHERE q.reported = false AND q.product_id = 48432
       -- ORDER BY q.helpful DESC
   )
   SELECT product_id,
@@ -93,25 +93,35 @@ EXPLAIN (ANALYZE, BUFFERS)
     'asker_name', q.asker_name,
     'question_helpfulness', q.helpful,
     'reported', q.reported,
-    'answers', json_build_object(
-      a.id, json_build_object(
-        'id', a.id,
-        'body', a.body,
-        'date', a.date_written,
-        'answerer_name', a.answerer_name,
-        'helpfulness', a.helpful,
-        'photos',
-          json_build_object(
-            'id', p.id,
-            'url', p.url
+    'answers',
+      CASE
+        WHEN a.id IS NULL THEN NULL
+        ELSE json_build_object(
+          a.id, json_build_object(
+            'id', a.id,
+            'body', a.body,
+            'date', a.date_written,
+            'answerer_name', a.answerer_name,
+            'helpfulness', a.helpful,
+            'photos',
+              CASE
+                WHEN p.id IS NULL THEN NULL
+                ELSE json_build_object(
+                  'id', p.id,
+                  'url', p.url
+                )
+              END
+          )
         )
-      ))
+      END
     )
   ) as results
   FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false AND product_id = 2
+  FULL OUTER JOIN answers a ON q.id = a.question_id
+  FULL OUTER JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported IS false
+    AND a.reported IS NOT true
+    AND product_id = 48432
   GROUP BY product_id, q.id, a.id
   ORDER BY q.helpful DESC, a.helpful DESC;
 
@@ -248,6 +258,11 @@ CREATE INDEX ON questions (product_id ASC, helpful DESC) WHERE reported=false;
 CREATE INDEX ON answers (question_id ASC, helpful DESC) WHERE reported=false;
 CREATE INDEX ON photos (answer_id ASC);
 
+-- FINAL: PARTIAL INDEXES ----------------------------------------------------
+CREATE INDEX ON questions (product_id ASC) WHERE reported=false;
+CREATE INDEX ON answers (question_id ASC) WHERE reported=false;
+CREATE INDEX ON photos (answer_id ASC);
+
 
 
 -- IGNORE BELOW: they did not improve speed  -----------------------------
@@ -292,6 +307,14 @@ CREATE INDEX ON answers (question_id ASC, helpful DESC);
 CREATE INDEX ON photos (answer_id ASC);
 
 --RESET INDEXES:
+DROP INDEX questions_product_id_idx;
 DROP INDEX questions_product_id_helpful_idx;
+DROP INDEX answers_question_id_idx;
 DROP INDEX answers_question_id_helpful_idx;
 DROP INDEX photos_answer_id_idx;
+
+
+-- FINAL: PARTIAL INDEXES TRIED BUT DID NOT HELP -------------------------------------------
+CREATE INDEX ON questions (product_id ASC, helpful DESC) WHERE reported=false;
+CREATE INDEX ON answers (question_id ASC, helpful DESC) WHERE reported=false AND id IS NOT NULL;
+CREATE INDEX ON photos (answer_id ASC) WHERE id IS NOT NULL;

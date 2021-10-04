@@ -27,16 +27,16 @@ app.get('/*', (req, res) => {
       // AnswerList: GET /qa/questions/:question_id/answers
       if (splitURL[3] === 'answers') {
         const question_id = splitURL[2].slice(1)
+        console.log('getAnswers called')
         let { page, count } = req.query;
         let limit = count ? count : 5;
-        let offset;
+        let offset = 0;
         if (!page || page === '1') {
           page = 1;
-          offset = 0;
         } else {
           offset = page * limit;
         }
-        // console.log('questionId:', question_id, 'limit:', limit, 'offset:', offset);
+        // console.log('question_id:', question_id, 'limit:', limit, 'offset:', offset);
         getAnswers(question_id, limit, offset, page, (err, data) => {
           if (err) {
             res.status(404).send(err);
@@ -49,14 +49,13 @@ app.get('/*', (req, res) => {
      } else {
       let { product_id, page, count } = req.query;
       let limit = count ? count : 5;
-      let offset;
+      let offset = 0;
       if (!page || page === '1') {
         page = 1;
-        offset = 0;
       } else {
         offset = page * limit;
       }
-      // console.log('productId:', product_id, 'limit:', limit, 'offset:', offset);
+      // console.log('product_id:', product_id, 'limit:', limit, 'offset:', offset);
       getQuestions(product_id, limit, offset, page, (err, data) => {
         if (err) {
           res.status(404).send(err);
@@ -71,35 +70,34 @@ app.get('/*', (req, res) => {
 
 app.post('/*', (req, res) => {
   const { url } = req;
-  console.log(url)
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
   switch (firstRoute) {
     case 'qa':
-      //POST /qa/questions
-      if (url === '/qa/questions/') {
+      //POST /qa/questions/:question_id/answers
+      if (splitURL[3] === 'answers') {
+        const question_id = splitURL[2].slice(1)
         const body = req.body.body;
         const name = req.body.name;
         const email = req.body.email;
-        const productId = req.body.productId;
-        // console.log('productId', productId);
-        postQuestion(body, name, email, productId, (err, data) => {
+        // const photos = req.body.photos;
+        console.log('added answer for question', question_id);
+        postAnswer(body, name, email, question_id, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {
             res.status(201).send(data);
           }
         })
-      //POST /qa/questions/:question_id/answers
+      //POST /qa/questions
       } else {
-        const questionId = splitURL[2].slice(1)
         const body = req.body.body;
         const name = req.body.name;
         const email = req.body.email;
-        // const photos = req.body.photos;
-        console.log('questionId', questionId);
-        postAnswer(body, name, email, questionId, (err, data) => {
+        const product_id = req.body.product_id;
+        console.log('asked question for product_id', product_id, body, name, email);
+        postQuestion(body, name, email, product_id, (err, data) => {
           if (err) {
             res.status(404).send(err);
           } else {
@@ -107,15 +105,12 @@ app.post('/*', (req, res) => {
           }
         })
       }
-    default:
-      console.log('no POST request found')
   }
 });
 
 
 app.put('/*', (req, res) => {
   const { url } = req;
-  console.log(url)
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
@@ -125,10 +120,12 @@ app.put('/*', (req, res) => {
     case 'qa':
       // PUT requests for questions
       if (splitURL[1] === 'questions') {
-        const questionId = splitURL[2].slice(1);
+        const question_id = splitURL[2].slice(1);
         // PUT /qa/questions/:question_id/helpful
         if (splitURL[3] === 'helpful') {
-          putQuestionHelpful(questionId, (err, data) => {
+          console.log('helpfulquestion called')
+
+          putQuestionHelpful(question_id, (err, data) => {
             if (err) {
               res.status(404).send(err);
             } else {
@@ -137,7 +134,8 @@ app.put('/*', (req, res) => {
           })
         //PUT /qa/questions/:question_id/report
         } else if (splitURL[3] === 'report') {
-          putQuestionReport(questionId, (err, data) => {
+          console.log('reportQuestion', question_id)
+          putQuestionReport(question_id, (err, data) => {
             if (err) {
               res.status(404).send(err);
             } else {
@@ -147,11 +145,12 @@ app.put('/*', (req, res) => {
         }
       // PUT requests for answers
       } else if (splitURL[1] === 'answers') {
-        const answerId = splitURL[2].slice(1);
-        // console.log('answerId', answerId);
+        const answer_id = splitURL[2].slice(1);
+        console.log('answer_id called', answer_id);
         // PUT /qa/answers/:answer_id/helpful
         if (splitURL[3] === 'helpful') {
-          putAnswerHelpful(answerId, (err, data) => {
+          console.log('helpful answer', answer_id);
+          putAnswerHelpful(answer_id, (err, data) => {
             if (err) {
               res.status(404).send(err);
             } else {
@@ -160,7 +159,9 @@ app.put('/*', (req, res) => {
           })
         // PUT /qa/answers/:answer_id/report
         } else if (splitURL[3] === 'report') {
-          putAnswerReport(answerId, (err, data) => {
+          console.log('report answer_id called', answer_id);
+
+          putAnswerReport(answer_id, (err, data) => {
             if (err) {
               res.status(404).send(err);
             } else {
