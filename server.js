@@ -39,7 +39,7 @@ app.get('/*', (req, res) => {
         // console.log('question_id:', question_id, 'limit:', limit, 'offset:', offset);
         getAnswers(question_id, limit, offset, page, (err, data) => {
           if (err) {
-            res.status(404).send(err);
+            res.status(500).send(err);
           } else {
             res.status(200).send(data);
           }
@@ -58,7 +58,7 @@ app.get('/*', (req, res) => {
       // console.log('product_id:', product_id, 'limit:', limit, 'offset:', offset);
       getQuestions(product_id, limit, offset, page, (err, data) => {
         if (err) {
-          res.status(404).send(err);
+          res.status(500).send(err);
         } else {
           res.status(200).send(data);
         }
@@ -77,15 +77,15 @@ app.post('/*', (req, res) => {
     case 'qa':
       //POST /qa/questions/:question_id/answers
       if (splitURL[3] === 'answers') {
-        const question_id = splitURL[2].slice(1)
+        const question_id = splitURL[2].slice(1);
         const body = req.body.body;
         const name = req.body.name;
         const email = req.body.email;
         // const photos = req.body.photos;
-        console.log('added answer for question', question_id);
+        // console.log('added answer for question', body, name, email, question_id);
         postAnswer(body, name, email, question_id, (err, data) => {
           if (err) {
-            res.status(404).send(err);
+            res.status(500).send(err);
           } else {
             res.status(201).send(data);
           }
@@ -96,10 +96,10 @@ app.post('/*', (req, res) => {
         const name = req.body.name;
         const email = req.body.email;
         const product_id = req.body.product_id;
-        console.log('asked question for product_id', product_id, body, name, email);
+        // console.log('asked question for product_id', product_id, body, name, email);
         postQuestion(body, name, email, product_id, (err, data) => {
           if (err) {
-            res.status(404).send(err);
+            res.status(500).send(err);
           } else {
             res.status(201).send(data);
           }
@@ -123,21 +123,20 @@ app.put('/*', (req, res) => {
         const question_id = splitURL[2].slice(1);
         // PUT /qa/questions/:question_id/helpful
         if (splitURL[3] === 'helpful') {
-          console.log('helpfulquestion called')
-
+          // console.log('helpfulquestion called')
           putQuestionHelpful(question_id, (err, data) => {
             if (err) {
-              res.status(404).send(err);
+              res.status(500).send(err);
             } else {
               res.status(204).send(data);
             }
           })
         //PUT /qa/questions/:question_id/report
         } else if (splitURL[3] === 'report') {
-          console.log('reportQuestion', question_id)
+          // console.log('reportQuestion', question_id)
           putQuestionReport(question_id, (err, data) => {
             if (err) {
-              res.status(404).send(err);
+              res.status(500).send(err);
             } else {
               res.status(204).send(data);
             }
@@ -146,33 +145,30 @@ app.put('/*', (req, res) => {
       // PUT requests for answers
       } else if (splitURL[1] === 'answers') {
         const answer_id = splitURL[2].slice(1);
-        console.log('answer_id called', answer_id);
+        // console.log('answer_id called', answer_id);
         // PUT /qa/answers/:answer_id/helpful
         if (splitURL[3] === 'helpful') {
           console.log('helpful answer', answer_id);
           putAnswerHelpful(answer_id, (err, data) => {
             if (err) {
-              res.status(404).send(err);
+              res.status(500).send(err);
             } else {
               res.status(204).send(data);
             }
           })
         // PUT /qa/answers/:answer_id/report
         } else if (splitURL[3] === 'report') {
-          console.log('report answer_id called', answer_id);
-
+          // console.log('report answer_id called', answer_id);
           putAnswerReport(answer_id, (err, data) => {
             if (err) {
-              res.status(404).send(err);
+              res.status(500).send(err);
             } else {
               res.status(204).send(data);
             }
           })
         }
       }
-    default:
-      console.log('no PUT request found')
-  }
+    }
 })
 
 //Start Listen

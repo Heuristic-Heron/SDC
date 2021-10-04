@@ -82,7 +82,7 @@ module.exports = {
 
   // PUT Question - Helpful
   putQuestionHelpful: function(question_id, callback) {
-    console.log('helpful', question_id)
+    // console.log('helpful', question_id)
     const helpfulQuestionQuery = {
       text: helpfulQuestion,
       values: [question_id],
@@ -98,7 +98,7 @@ module.exports = {
 
   // PUT Answer - Helpful
   putAnswerHelpful: function(answer_id, callback) {
-    console.log('called PUT request with', answer_id);
+    // console.log('called PUT request with', answer_id);
     const helpfulAnswerQuery = {
       text: helpfulAnswer,
       values: [answer_id],

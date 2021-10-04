@@ -10,25 +10,37 @@ const questionsList =
     'asker_name', q.asker_name,
     'question_helpfulness', q.helpful,
     'reported', q.reported,
-    'answers', json_build_object(
-      a.id, json_build_object(
-        'id', a.id,
-        'body', a.body,
-        'date', a.date_written,
-        'answerer_name', a.answerer_name,
-        'helpfulness', a.helpful,
-        'photos',
-          json_build_object(
-            'id', p.id,
-            'url', p.url
+    'answers',
+      CASE
+        WHEN a.id IS NULL THEN '{}'::json
+        ELSE json_build_object(
+          a.id, json_build_object(
+            'id', a.id,
+            'body', a.body,
+            'date', a.date_written,
+            'answerer_name', a.answerer_name,
+            'helpfulness', a.helpful,
+            'photos',
+              CASE
+                WHEN p.id IS NULL THEN '[]'::json
+                ELSE json_build_array(
+                  json_build_object(
+                    'id', p.id,
+                    'url', p.url
+                  )
+                )
+              END
+          )
         )
-      ))
+      END
     )
   ) as results
   FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false AND product_id = $1
+  FULL OUTER JOIN answers a ON q.id = a.question_id
+  FULL OUTER JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported IS false
+    AND a.reported IS NOT true
+    AND product_id = $1
   GROUP BY product_id, q.id, a.id
   ORDER BY q.helpful DESC, a.helpful DESC
   LIMIT $2 OFFSET $3`
@@ -56,7 +68,7 @@ const answersList  =
         )
       AS results
       FROM answers a
-      INNER JOIN photo p ON a.id = p.answer_id
+      FULL OUTER JOIN photo p ON a.id = p.answer_id
       WHERE a.reported = false
       -- ORDER BY a.helpful DESC
     )
@@ -70,11 +82,11 @@ const answersList  =
     LIMIT $2 OFFSET $3`
 
 const insertQuestion =
-  `INSERT INTO questions (body, asker_name, asker_email, product_id)
+  `INSERT INTO questions(body, asker_name, asker_email, product_id)
   VALUES ($1, $2, $3, $4)`
 
 const insertAnswer =
-  `INSERT INTO questions(body, answerer_name, answerer_email, question_id)
+  `INSERT INTO answers(body, answerer_name, answerer_email, question_id)
   VALUES ($1, $2, $3, $4)`
 
 const helpfulQuestion =
@@ -83,7 +95,7 @@ const helpfulQuestion =
   WHERE id = $1)`
 
 const helpfulAnswer =
-  `UPDATE questions
+  `UPDATE answers
   SET helpful = helpful + 1
   WHERE id = $1`
 
@@ -93,7 +105,7 @@ const reportQuestion =
   WHERE id = $1`
 
 const reportAnswer =
-  `UPDATE questions
+  `UPDATE answers
   SET reported = true
   WHERE id = $1`
 

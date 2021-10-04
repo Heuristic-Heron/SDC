@@ -79,8 +79,7 @@ SELECT *
   ORDER BY q.helpful DESC, a.helpful DESC;
 
 
-
--- COMBO QUERY
+-- FINAL COMBO QUERY
 EXPLAIN (ANALYZE, BUFFERS)
  SELECT product_id,
   '1'::int as page,
@@ -95,7 +94,7 @@ EXPLAIN (ANALYZE, BUFFERS)
     'reported', q.reported,
     'answers',
       CASE
-        WHEN a.id IS NULL THEN NULL
+        WHEN a.id IS NULL THEN '{}'::json
         ELSE json_build_object(
           a.id, json_build_object(
             'id', a.id,
@@ -105,10 +104,12 @@ EXPLAIN (ANALYZE, BUFFERS)
             'helpfulness', a.helpful,
             'photos',
               CASE
-                WHEN p.id IS NULL THEN NULL
-                ELSE json_build_object(
-                  'id', p.id,
-                  'url', p.url
+                WHEN p.id IS NULL THEN '[]'::json
+                ELSE json_build_array(
+                  json_build_object(
+                    'id', p.id,
+                    'url', p.url
+                  )
                 )
               END
           )
@@ -166,7 +167,7 @@ photo AS (
       )
     AS results
     FROM answers a
-    INNER JOIN photo p ON a.id = p.answer_id
+    FULL OUTER JOIN photo p ON a.id = p.answer_id
     WHERE a.reported = false
     -- ORDER BY a.helpful DESC
   )
@@ -201,7 +202,7 @@ INSERT INTO questions (body, asker_name, asker_email, product_id)
 -- Parameters: question_id, body, name, email, photos
 EXPLAIN (ANALYZE, BUFFERS)
 INSERT INTO answers (body, answerer_name, answerer_email, question_id)
-  VALUES ('This is the only answer', 'testing123', 'test@gmail.com', 2);
+  VALUES ('This is the only answer again', 'testing123', 'test@gmail.com', 34);
 
 
 EXPLAIN (ANALYZE, BUFFERS)
