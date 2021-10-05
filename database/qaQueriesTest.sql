@@ -16,118 +16,59 @@ SELECT * FROM photos LIMIT 10;
 -- CREATE Results Table joining questions, answers and photos
 -- Should appear in order of helpfulness (and maybe date?)
 
--- JSON FORMAT
+-- FINAL COMBO QUERY WITH PRODUCT FILTERING FIRST
 EXPLAIN (ANALYZE, BUFFERS)
-WITH
-photo AS (
-    SELECT answer_id, json_agg(
-      json_build_object(
-        'id', p.id,
-        'url', p.url
-    )) AS photos
-    FROM photos p
-    GROUP BY answer_id
-  ),
-  filtered_answers AS (
-    SELECT id, question_id, json_object_agg(
-      a.id, json_build_object(
-        'id', a.id,
-        'body', a.body,
-        'date', a.date_written,
-        'answerer_name', a.answerer_name,
-        'helpfulness', a.helpful,
-        'photos', p.photos
-      ))
-    AS answers
-    FROM answers a
-    FULL JOIN photo p ON a.id = p.answer_id
-    WHERE a.reported IS NOT TRUE
-    GROUP BY a.id
-    -- ORDER BY a.helpful DESC
-  ),
-  filtered_questions AS (
-    SELECT product_id,
-      json_build_object(
-        'question_id', q.id,
-        'question_body', q.body,
-        'question_date', q.date_written,
-        'asker_name', q.asker_name,
-        'question_helpfulness', q.helpful,
-        'reported', q.reported,
-        'answers', fa.answers
-      )
-      AS results
-      FROM questions q
-      FULL JOIN filtered_answers fa ON q.id = fa.question_id
-      WHERE q.reported = false AND q.product_id = 48432
-      -- ORDER BY q.helpful DESC
-  )
-  SELECT product_id,
-    '1'::int as page,
-    '5'::int as count,
-    json_agg(fq.results) as results
-  FROM filtered_questions fq
-  GROUP BY product_id;
-
--- FAST QUERY BUT NOT IN THE DESIRED JSON FORMAT
-EXPLAIN (ANALYZE, BUFFERS)
-SELECT *
-  FROM questions q
-  INNER JOIN answers a ON q.id = a.question_id
-  INNER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported = false AND a.reported = false AND product_id = 2
-  ORDER BY q.helpful DESC, a.helpful DESC;
-
-
--- FINAL COMBO QUERY
-EXPLAIN (ANALYZE, BUFFERS)
+WITH filtered_questions AS (
+  SELECT * FROM questions q
+  WHERE q.reported = false AND q.product_id = 48432
+  -- ORDER by q.helpful DESC
+),
+filtered_answers AS (
+  SELECT * FROM answers a
+  WHERE a.reported = false
+  -- ORDER by a.helpful DESC
+)
  SELECT product_id,
   '1'::int as page,
   '5'::int as count,
   json_agg(
     json_build_object(
-    'question_id', q.id,
-    'question_body', q.body,
-    'question_date', q.date_written,
-    'asker_name', q.asker_name,
-    'question_helpfulness', q.helpful,
-    'reported', q.reported,
-    'answers',
-      CASE
-        WHEN a.id IS NULL THEN '{}'::json
-        ELSE json_build_object(
-          a.id, json_build_object(
-            'id', a.id,
-            'body', a.body,
-            'date', a.date_written,
-            'answerer_name', a.answerer_name,
-            'helpfulness', a.helpful,
-            'photos',
-              CASE
-                WHEN p.id IS NULL THEN '[]'::json
-                ELSE json_build_array(
-                  json_build_object(
-                    'id', p.id,
-                    'url', p.url
+      'question_id', fq.id,
+      'question_body', fq.body,
+      'question_date', fq.date_written,
+      'asker_name', fq.asker_name,
+      'question_helpfulness', fq.helpful,
+      'reported', fq.reported,
+      'answers',
+        CASE
+          WHEN fa.id IS NULL THEN '{}'::json
+          ELSE json_build_object(
+            fa.id, json_build_object(
+              'id', fa.id,
+              'body', fa.body,
+              'date', fa.date_written,
+              'answerer_name', fa.answerer_name,
+              'helpfulness', fa.helpful,
+              'photos',
+                CASE
+                  WHEN p.id IS NULL THEN '[]'::json
+                  ELSE json_build_array(
+                    json_build_object(
+                      'id', p.id,
+                      'url', p.url
+                    )
                   )
-                )
-              END
+                END
+            )
           )
-        )
-      END
+        END
     )
   ) as results
-  FROM questions q
-  FULL OUTER JOIN answers a ON q.id = a.question_id
-  FULL OUTER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported IS false
-    AND a.reported IS NOT true
-    AND product_id = 48432
-  GROUP BY product_id, q.id, a.id
-  ORDER BY q.helpful DESC, a.helpful DESC;
-
-
-
+  FROM filtered_questions fq
+  LEFT JOIN filtered_answers fa ON fq.id = fa.question_id
+  LEFT JOIN photos p ON fa.id = p.answer_id
+  GROUP BY fq.product_id, fq.id, fa.id;
+  -- ORDER BY fq.helpful DESC, fa.helpful DESC;
 
 
 ------------------------------------------------------------------
@@ -138,7 +79,7 @@ EXPLAIN (ANALYZE, BUFFERS)
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT *
   FROM answers a
-  INNER JOIN photos p ON a.id = p.answer_id
+  LEFT JOIN photos p ON a.id = p.answer_id
   WHERE a.reported = false AND a.question_id = 5
   ORDER BY a.helpful DESC;
   -- LIMIT 20
@@ -319,3 +260,133 @@ DROP INDEX photos_answer_id_idx;
 CREATE INDEX ON questions (product_id ASC, helpful DESC) WHERE reported=false;
 CREATE INDEX ON answers (question_id ASC, helpful DESC) WHERE reported=false AND id IS NOT NULL;
 CREATE INDEX ON photos (answer_id ASC) WHERE id IS NOT NULL;
+
+--------------------------------------------------------------------------------
+-------------- PRIOR VERSIONS OF PRIMARY GET QUESTIONS QUERY -------------------
+-- JSON FORMAT
+EXPLAIN (ANALYZE, BUFFERS)
+WITH
+photo AS (
+    SELECT answer_id, json_agg(
+      json_build_object(
+        'id', p.id,
+        'url', p.url
+    )) AS photos
+    FROM photos p
+    GROUP BY answer_id
+  ),
+  filtered_answers AS (
+    SELECT id, question_id, json_object_agg(
+      a.id, json_build_object(
+        'id', a.id,
+        'body', a.body,
+        'date', a.date_written,
+        'answerer_name', a.answerer_name,
+        'helpfulness', a.helpful,
+        'photos', p.photos
+      ))
+    AS answers
+    FROM answers a
+    FULL JOIN photo p ON a.id = p.answer_id
+    WHERE a.reported IS NOT TRUE
+    GROUP BY a.id
+    -- ORDER BY a.helpful DESC
+  ),
+  filtered_questions AS (
+    SELECT product_id,
+      json_build_object(
+        'question_id', q.id,
+        'question_body', q.body,
+        'question_date', q.date_written,
+        'asker_name', q.asker_name,
+        'question_helpfulness', q.helpful,
+        'reported', q.reported,
+        'answers', fa.answers
+      )
+      AS results
+      FROM questions q
+      FULL JOIN filtered_answers fa ON q.id = fa.question_id
+      WHERE q.reported = false AND q.product_id = 48432
+      -- ORDER BY q.helpful DESC
+  )
+  SELECT product_id,
+    '1'::int as page,
+    '5'::int as count,
+    json_agg(fq.results) as results
+  FROM filtered_questions fq
+  GROUP BY product_id;
+
+
+-- FASTEST QUERY BUT NOT IN THE DESIRED JSON FORMAT AND DOES NOT RETURN QUESTIONS WITHOUT ANSWERS
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+  FROM questions q
+  LEFT JOIN answers a ON q.id = a.question_id
+  LEFT JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported = false AND a.reported = false AND product_id = 48432
+  ORDER BY q.helpful DESC, a.helpful DESC;
+
+
+-- NOT IN THE DESIRED JSON FORMAT
+EXPLAIN (ANALYZE, BUFFERS)
+WITH filtered_questions AS (
+  SELECT * FROM questions q
+  WHERE q.reported = false AND product_id = 48432
+  -- ORDER by q.helpful DESC
+),
+filtered_answers AS (
+  SELECT * FROM answers a
+  WHERE a.reported = false
+  -- ORDER by a.helpful DESC
+)
+SELECT * FROM filtered_questions fq
+  LEFT JOIN filtered_answers fa on fq.id = fa.question_id
+  LEFT JOIN photos p ON fa.id = p.answer_id
+  ORDER BY fq.helpful DESC, fa.helpful DESC;
+
+-- SLOW COMBO QUERY
+EXPLAIN (ANALYZE, BUFFERS)
+ SELECT product_id,
+  '1'::int as page,
+  '5'::int as count,
+  json_agg(
+    json_build_object(
+    'question_id', q.id,
+    'question_body', q.body,
+    'question_date', q.date_written,
+    'asker_name', q.asker_name,
+    'question_helpfulness', q.helpful,
+    'reported', q.reported,
+    'answers',
+      CASE
+        WHEN a.id IS NULL THEN '{}'::json
+        ELSE json_build_object(
+          a.id, json_build_object(
+            'id', a.id,
+            'body', a.body,
+            'date', a.date_written,
+            'answerer_name', a.answerer_name,
+            'helpfulness', a.helpful,
+            'photos',
+              CASE
+                WHEN p.id IS NULL THEN '[]'::json
+                ELSE json_build_array(
+                  json_build_object(
+                    'id', p.id,
+                    'url', p.url
+                  )
+                )
+              END
+          )
+        )
+      END
+    )
+  ) as results
+  FROM questions q
+  LEFT JOIN answers a ON q.id = a.question_id
+  LEFT JOIN photos p ON a.id = p.answer_id
+  WHERE q.reported IS false
+    AND a.reported IS NOT true
+    AND product_id = 48432
+  GROUP BY product_id, q.id, a.id
+  ORDER BY q.helpful DESC, a.helpful DESC;

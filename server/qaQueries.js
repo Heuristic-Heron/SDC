@@ -68,7 +68,7 @@ const answersList  =
         )
       AS results
       FROM answers a
-      FULL OUTER JOIN photo p ON a.id = p.answer_id
+      LEFT JOIN photo p ON a.id = p.answer_id
       WHERE a.reported = false
       -- ORDER BY a.helpful DESC
     )
