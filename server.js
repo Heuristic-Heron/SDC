@@ -16,7 +16,7 @@ app.use(compression());
 
 app.get('/*', (req, res) => {
   const { url } = req;
-  console.log('GET url', url)
+  // console.log('GET url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');
@@ -68,7 +68,7 @@ app.get('/*', (req, res) => {
 
 app.post('/*', (req, res) => {
   const { url } = req;
-  console.log('POST url', url)
+  // console.log('POST url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');
@@ -111,7 +111,7 @@ app.post('/*', (req, res) => {
 
 app.put('/*', (req, res) => {
   const { url } = req;
-  console.log('PUT url', url)
+  // console.log('PUT url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');

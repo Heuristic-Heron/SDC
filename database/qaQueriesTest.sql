@@ -21,7 +21,7 @@ EXPLAIN (ANALYZE, BUFFERS)
 WITH filtered_questions AS (
   SELECT * FROM questions q
   WHERE q.reported = false AND q.product_id = 48432
-  -- ORDER by q.helpful DESC
+  ORDER by q.helpful DESC
 ),
 filtered_answers AS (
   SELECT * FROM answers a
@@ -76,57 +76,41 @@ filtered_answers AS (
 -- Retrieves a list of questions for a particular product. Does not include any reported questions.
 -- Parameters: question_id, page, count
 -- Results table for just answers (should be faster than the question query above)
-EXPLAIN (ANALYZE, BUFFERS)
-SELECT *
-  FROM answers a
-  LEFT JOIN photos p ON a.id = p.answer_id
-  WHERE a.reported = false AND a.question_id = 5
-  ORDER BY a.helpful DESC;
-  -- LIMIT 20
-
 -- ALTERNATE IN JSON FORMAT
 EXPLAIN (ANALYZE, BUFFERS)
 WITH
-photo AS (
-    SELECT answer_id, json_agg(
-      json_build_object(
-        'id', p.id,
-        'url', p.url
-    )) AS photos
-    FROM photos p
-    GROUP BY answer_id
-  ),
-  filtered_answers AS (
-    SELECT a.question_id,
-      json_build_object(
-        'answer_id', a.id,
-        'body', a.body,
-        'date', a.date_written,
-        'answerer_name', a.answerer_name,
-        'helpfulness', a.helpful,
-        'photos', p.photos
-      )
-    AS results
-    FROM answers a
-    FULL OUTER JOIN photo p ON a.id = p.answer_id
-    WHERE a.reported = false
-    -- ORDER BY a.helpful DESC
-  )
-  SELECT question_id,
+filtered_answers AS (
+  SELECT * FROM answers a
+  WHERE a.reported = false AND question_id = 34
+  -- ORDER by a.helpful DESC
+)
+SELECT fa.question_id,
     '1'::int as page,
     '5'::int as count,
-    json_agg(fa.results) as results
+    json_agg(
+      json_build_object(
+      'answer_id', fa.id,
+      'body', fa.body,
+      'date', fa.date_written,
+      'answerer_name', fa.answerer_name,
+      'helpfulness', fa.helpful,
+      'photos',
+        CASE
+          WHEN p.id IS NULL THEN '[]'::json
+          ELSE json_build_array(
+            json_build_object(
+              'id', p.id,
+              'url', p.url
+            )
+          )
+        END
+    )) AS results
   FROM filtered_answers fa
-  WHERE question_id = 34
+  LEFT JOIN photos p ON fa.id = p.answer_id
   GROUP BY question_id;
 
 
--- Query for last 10% of records
-EXPLAIN ANALYZE
-SELECT * FROM answers
-  WHERE question_id = 1 AND reported = false
-  ORDER BY date_written DESC
-  LIMIT (SELECT MAX(id) from questons) * 0.1;
+
 
 ----------------------------------------------------------------------------------
 
@@ -390,3 +374,56 @@ EXPLAIN (ANALYZE, BUFFERS)
     AND product_id = 48432
   GROUP BY product_id, q.id, a.id
   ORDER BY q.helpful DESC, a.helpful DESC;
+
+
+-------------- PRIOR VERSIONS OF GET ANSWERS QUERY -------------------
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+  FROM answers a
+  LEFT JOIN photos p ON a.id = p.answer_id
+  WHERE a.reported = false AND a.question_id = 5
+  ORDER BY a.helpful DESC;
+  -- LIMIT 20
+
+-- ALTERNATE IN JSON FORMAT
+EXPLAIN (ANALYZE, BUFFERS)
+WITH
+photo AS (
+    SELECT answer_id, json_agg(
+      json_build_object(
+        'id', p.id,
+        'url', p.url
+    )) AS photos
+    FROM photos p
+    GROUP BY answer_id
+  ),
+  filtered_answers AS (
+    SELECT a.question_id,
+      json_build_object(
+        'answer_id', a.id,
+        'body', a.body,
+        'date', a.date_written,
+        'answerer_name', a.answerer_name,
+        'helpfulness', a.helpful,
+        'photos', p.photos
+      )
+    AS results
+    FROM answers a
+    LEFT JOIN photo p ON a.id = p.answer_id
+    WHERE a.reported = false AND  question_id = 34
+    -- ORDER BY a.helpful DESC
+  )
+  SELECT question_id,
+    '1'::int as page,
+    '5'::int as count,
+    json_agg(fa.results) as results
+  FROM filtered_answers fa
+  GROUP BY question_id;
+
+
+-- Query for last 10% of records
+EXPLAIN ANALYZE
+SELECT * FROM answers
+  WHERE question_id = 1 AND reported = false
+  ORDER BY date_written DESC
+  LIMIT (SELECT MAX(id) from questons) * 0.1;

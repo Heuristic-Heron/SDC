@@ -4,6 +4,7 @@ client/dist/bundle.js.map
 server/config.js
 coverage
 aws-demo.pem
+aws-sdc.pem
 data/
 serverFEC.js
 newrelic.js

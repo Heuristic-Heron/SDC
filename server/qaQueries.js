@@ -1,83 +1,83 @@
 const questionsList =
-  `SELECT product_id,
-  $4::int as page,
-  $2::int as count,
-  json_agg(
-    json_build_object(
-    'question_id', q.id,
-    'question_body', q.body,
-    'question_date', q.date_written,
-    'asker_name', q.asker_name,
-    'question_helpfulness', q.helpful,
-    'reported', q.reported,
-    'answers',
-      CASE
-        WHEN a.id IS NULL THEN '{}'::json
-        ELSE json_build_object(
-          a.id, json_build_object(
-            'id', a.id,
-            'body', a.body,
-            'date', a.date_written,
-            'answerer_name', a.answerer_name,
-            'helpfulness', a.helpful,
-            'photos',
-              CASE
-                WHEN p.id IS NULL THEN '[]'::json
-                ELSE json_build_array(
-                  json_build_object(
-                    'id', p.id,
-                    'url', p.url
-                  )
-                )
-              END
-          )
-        )
-      END
-    )
-  ) as results
-  FROM questions q
-  FULL OUTER JOIN answers a ON q.id = a.question_id
-  FULL OUTER JOIN photos p ON a.id = p.answer_id
-  WHERE q.reported IS false
-    AND a.reported IS NOT true
-    AND product_id = $1
-  GROUP BY product_id, q.id, a.id
-  ORDER BY q.helpful DESC, a.helpful DESC
+  `WITH filtered_questions AS (
+    SELECT * FROM questions q
+    WHERE q.reported = false AND q.product_id = $1
+  ),
+  filtered_answers AS (
+    SELECT * FROM answers a
+    WHERE a.reported = false
+  )
+  SELECT product_id,
+    $4::int as page,
+    $2::int as count,
+    json_agg(
+      json_build_object(
+        'question_id', fq.id,
+        'question_body', fq.body,
+        'question_date', fq.date_written,
+        'asker_name', fq.asker_name,
+        'question_helpfulness', fq.helpful,
+        'reported', fq.reported,
+        'answers',
+          CASE
+            WHEN fa.id IS NULL THEN '{}'::json
+            ELSE json_build_object(
+              fa.id, json_build_object(
+                'id', fa.id,
+                'body', fa.body,
+                'date', fa.date_written,
+                'answerer_name', fa.answerer_name,
+                'helpfulness', fa.helpful,
+                'photos',
+                  CASE
+                    WHEN p.id IS NULL THEN '[]'::json
+                    ELSE json_build_array(
+                      json_build_object(
+                        'id', p.id,
+                        'url', p.url
+                      )
+                    )
+                  END
+              )
+            )
+          END
+      )
+    ) as results
+  FROM filtered_questions fq
+  LEFT JOIN filtered_answers fa ON fq.id = fa.question_id
+  LEFT JOIN photos p ON fa.id = p.answer_id
+  GROUP BY fq.product_id, fq.id, fa.id
   LIMIT $2 OFFSET $3`
 
 const answersList  =
   `WITH
-  photo AS (
-      SELECT answer_id, json_agg(
-        json_build_object(
-          'id', p.id,
-          'url', p.url
-      )) AS photos
-      FROM photos p
-      GROUP BY answer_id
-    ),
-    filtered_answers AS (
-      SELECT a.question_id,
-        json_build_object(
-          'answer_id', a.id,
-          'body', a.body,
-          'date', a.date_written,
-          'answerer_name', a.answerer_name,
-          'helpfulness', a.helpful,
-          'photos', p.photos
-        )
-      AS results
-      FROM answers a
-      LEFT JOIN photo p ON a.id = p.answer_id
-      WHERE a.reported = false
-      -- ORDER BY a.helpful DESC
-    )
-    SELECT question_id,
+  filtered_answers AS (
+    SELECT * FROM answers a
+    WHERE a.reported = false AND question_id = $1
+  )
+  SELECT fa.question_id,
       $4::int as page,
       $2::int as count,
-      json_agg(fa.results) as results
+      json_agg(
+        json_build_object(
+        'answer_id', fa.id,
+        'body', fa.body,
+        'date', fa.date_written,
+        'answerer_name', fa.answerer_name,
+        'helpfulness', fa.helpful,
+        'photos',
+          CASE
+            WHEN p.id IS NULL THEN '[]'::json
+            ELSE json_build_array(
+              json_build_object(
+                'id', p.id,
+                'url', p.url
+              )
+            )
+          END
+      )) AS results
     FROM filtered_answers fa
-    WHERE question_id = $1
+    LEFT JOIN photos p ON fa.id = p.answer_id
     GROUP BY question_id
     LIMIT $2 OFFSET $3`
 
