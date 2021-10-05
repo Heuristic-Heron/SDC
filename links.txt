@@ -1,0 +1,6 @@
+select *  from pg_settings where name='shared_buffers'
+link to Postgres Config File:
+/usr/local/var/postgres/postgresql.conf
+
+link to Postgres Log:
+/usr/local/var/log/postgres.log

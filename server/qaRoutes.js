@@ -1,17 +1,17 @@
-// require('./qaConnection.js');
-const { Pool, Client } = require('pg');
+const db = require('./qaConnection.js');
+// const { Pool, Client } = require('pg');
 const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./config.js');
 const { questionsList, answersList, insertQuestion, insertAnswer, helpfulQuestion, helpfulAnswer, reportQuestion, reportAnswer } = require('./qaQueries.js');
 
-const client = new Client({
-  user: POSTGRES_USER,
-  host: '127.0.0.1',
-  database: 'questionsandanswers',
-  password: POSTGRES_PASSWORD,
-  port: 5432,
-})
+// const client = new Client({
+//   user: POSTGRES_USER,
+//   host: '127.0.0.1',
+//   database: 'questionsandanswers',
+//   password: POSTGRES_PASSWORD,
+//   port: 5432,
+// })
 
-client.connect()
+// client.connect()
 
 module.exports = {
 
@@ -24,7 +24,7 @@ module.exports = {
     }
     // console.log('offset', offset)
     // console.log('limit', limit)
-    client.query(questionsListQuery, (err, res) => {
+    db.query(questionsListQuery, (err, res) => {
       if (err) {
         callback(err.stack)
       } else {
@@ -41,7 +41,7 @@ module.exports = {
     }
     // console.log('offset', offset)
     // console.log('limit', limit)
-    client.query(answersListQuery, (err, res) => {
+    db.query(answersListQuery, (err, res) => {
       if (err) {
         callback(err.stack)
       } else {
@@ -56,7 +56,7 @@ module.exports = {
       text: insertQuestion,
       values: [body, asker_name, asker_email, product_id],
     }
-    client.query(insertQuestionQuery, (err, res) => {
+    db.query(insertQuestionQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -71,7 +71,7 @@ module.exports = {
       text: insertAnswer,
       values: [body, answerer_name, answerer_email, question_id],
     }
-    client.query(insertAnswerQuery, (err, res) => {
+    db.query(insertAnswerQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -87,7 +87,7 @@ module.exports = {
       text: helpfulQuestion,
       values: [question_id],
     }
-    client.query(helpfulQuestionQuery, (err, res) => {
+    db.query(helpfulQuestionQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -103,7 +103,7 @@ module.exports = {
       text: helpfulAnswer,
       values: [answer_id],
     }
-    client.query(helpfulAnswerQuery, (err, res) => {
+    db.query(helpfulAnswerQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -118,7 +118,7 @@ module.exports = {
       text: reportQuestion,
       values: [question_id],
     }
-    client.query(reportQuestionQuery, (err, res) => {
+    db.query(reportQuestionQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {
@@ -133,7 +133,7 @@ module.exports = {
       text: reportAnswer,
       values: [answer_id],
     }
-    client.query(reportAnswerQuery, (err, res) => {
+    db.query(reportAnswerQuery, (err, res) => {
       if (err) {
         callback(err)
       } else {

@@ -1,3 +1,4 @@
+require('newrelic');
 const path = require("path")
 const express = require("express");
 const compression = require('compression')
@@ -15,9 +16,7 @@ app.use(compression());
 
 app.get('/*', (req, res) => {
   const { url } = req;
-  console.log('url', url)
-  // console.log('params', req.params);
-  // console.log('query', req.query);
+  console.log('GET url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');
@@ -27,7 +26,6 @@ app.get('/*', (req, res) => {
       // AnswerList: GET /qa/questions/:question_id/answers
       if (splitURL[3] === 'answers') {
         const question_id = splitURL[2].slice(1)
-        console.log('getAnswers called')
         let { page, count } = req.query;
         let limit = count ? count : 5;
         let offset = 0;
@@ -70,6 +68,8 @@ app.get('/*', (req, res) => {
 
 app.post('/*', (req, res) => {
   const { url } = req;
+  console.log('POST url', url)
+
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
@@ -111,11 +111,11 @@ app.post('/*', (req, res) => {
 
 app.put('/*', (req, res) => {
   const { url } = req;
+  console.log('PUT url', url)
+
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
-  // console.log(firstRoute)
-  // console.log(splitURL[1], splitURL[3])
   switch (firstRoute) {
     case 'qa':
       // PUT requests for questions
@@ -148,7 +148,7 @@ app.put('/*', (req, res) => {
         // console.log('answer_id called', answer_id);
         // PUT /qa/answers/:answer_id/helpful
         if (splitURL[3] === 'helpful') {
-          console.log('helpful answer', answer_id);
+          // console.log('helpful answer', answer_id);
           putAnswerHelpful(answer_id, (err, data) => {
             if (err) {
               res.status(500).send(err);

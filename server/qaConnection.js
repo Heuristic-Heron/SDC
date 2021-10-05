@@ -1,18 +1,55 @@
-// const { Pool, Client } = require('pg');
-// const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./config.js');
+const { Pool, Client } = require('pg');
+const { POSTGRES_USER, POSTGRES_PASSWORD } = require('./config.js');
 
-// // const pool = new Pool({
-// //   user: POSTGRES_USER,
-// //   host: '127.0.0.1',
-// //   database: 'questionsandanswers',
-// //   password: POSTGRES_PASSWORD,
-// //   port: 5432,
-// // })
+const pool = new Pool({
+  user: POSTGRES_USER,
+  host: '127.0.0.1',
+  database: 'questionsandanswers',
+  password: POSTGRES_PASSWORD,
+  port: 5432,
+  max: 5,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+})
 
-// // pool.query('SELECT NOW()', (err, res) => {
-// //   console.log(err, res)
-// //   pool.end()
-// // })
+module.exports = {
+  async query(text, params) {
+    const start = Date.now()
+    const res = await pool.query(text, params)
+    const duration = Date.now() - start
+    // console.log('executed query', { text, duration })
+    return res
+  },
+  async getClient() {
+    const client = await pool.connect()
+    const query = client.query
+    const release = client.release
+    // set a timeout of 5 seconds, after which we will log this client's last query
+    const timeout = setTimeout(() => {
+      console.error('A client has been checked out for more than 5 seconds!')
+      console.error(`The last executed query on this client was: ${client.lastQuery}`)
+    }, 5000)
+    // monkey patch the query method to keep track of the last query executed
+    client.query = (...args) => {
+      client.lastQuery = args
+      return query.apply(client, args)
+    }
+    client.release = () => {
+      // clear our timeout
+      clearTimeout(timeout)
+      // set the methods back to their old un-monkey-patched version
+      client.query = query
+      client.release = release
+      return release.apply(client)
+    }
+    return client
+  }
+}
+
+// pool.query('SELECT NOW()', (err, res) => {
+//   console.log(err, res)
+//   pool.end()
+// })
 
 // const client = new Client({
 //   user: POSTGRES_USER,
@@ -24,7 +61,7 @@
 
 // client.connect()
 
-// // client.query('SELECT NOW()', (err, res) => {
-// //   console.log(err, res)
-// //   client.end()
-// // })
+// client.query('SELECT NOW()', (err, res) => {
+//   console.log(err, res)
+//   client.end()
+// })

@@ -6,3 +6,5 @@ coverage
 aws-demo.pem
 data/
 serverFEC.js
+newrelic.js
+newrelic_agent.log

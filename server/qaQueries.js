@@ -92,7 +92,7 @@ const insertAnswer =
 const helpfulQuestion =
   `UPDATE questions
   SET helpful = helpful + 1
-  WHERE id = $1)`
+  WHERE id = $1`
 
 const helpfulAnswer =
   `UPDATE answers
