@@ -4,3 +4,9 @@ link to Postgres Config File:
 
 link to Postgres Log:
 /usr/local/var/log/postgres.log
+
+link to ssh (aws-sdc.pem file):
+~/.ssh/aws-sdc.pem
+
+to connect to remote server:
+ssh aws-sdc

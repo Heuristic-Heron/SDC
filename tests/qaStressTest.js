@@ -40,7 +40,7 @@ export let options = {
     { duration: '5s', target: 50 }, // (10/s)
     { duration: '5s', target: 250 }, // normal load (50/s)
     { duration: '5s', target: 300 }, // around the breaking point (100/s)
-    // { duration: '5s', target: 400 }, // beyond the breaking point
+    { duration: '5s', target: 400 }, // beyond the breaking point
     { duration: '5s', target: 0 }, // scale down. Recovery stage.
   ],
   thresholds: {
