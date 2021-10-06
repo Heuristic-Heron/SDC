@@ -44,7 +44,7 @@ export let options = {
     { duration: '5s', target: 0 }, // scale down. Recovery stage.
   ],
   thresholds: {
-    http_req_failed: ['rate<0.05'], // errors less than 1%
+    http_req_failed: [{threshold: 'rate<0.01', abortOnFail: true}], // errors less than 1%
     http_req_duration: ['p(95)<3000'] // 95% of requests should be under 2000ms
   }
 };
@@ -72,7 +72,7 @@ export default function () {
     product_id: id
   }
   const answerData = {
-    body: 'Testing: This is the final answer',
+    body: 'Testing: This is the final answer. You can do it!',
     name: 'Cat Test',
     email: 'ilovetesting@yahoo.com'
   }
