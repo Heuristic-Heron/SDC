@@ -9,7 +9,6 @@ const { getQuestions, getAnswers, postQuestion, postAnswer, putQuestionHelpful, 
 
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
-app.use(express.static(path.join(__dirname, "loaderio-c8b50793fe2f098f65bf23dfabbc6fa6.txt")));
 
 app.use(express.json());
 app.use(compression());
@@ -17,12 +16,23 @@ app.use(compression());
 
 app.get('/*', (req, res) => {
   const { url } = req;
-  // console.log('GET url', url)
+  console.log('GET url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
   switch (firstRoute) {
+    case 'loaderio-c8b50793fe2f098f65bf23dfabbc6fa6.txt':
+      const fileName = 'loaderio-c8b50793fe2f098f65bf23dfabbc6fa6.txt';
+        const options = {
+          root: path.join(__dirname)
+        }
+        res.sendFile(fileName, options, (err) => {
+          if(err){
+            res.status(404).send(err)
+          }
+        })
+        break;
     case 'qa':
       // AnswerList: GET /qa/questions/:question_id/answers
       if (splitURL[3] === 'answers') {
@@ -69,7 +79,7 @@ app.get('/*', (req, res) => {
 
 app.post('/*', (req, res) => {
   const { url } = req;
-  // console.log('POST url', url)
+  console.log('POST url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');
@@ -112,7 +122,7 @@ app.post('/*', (req, res) => {
 
 app.put('/*', (req, res) => {
   const { url } = req;
-  // console.log('PUT url', url)
+  console.log('PUT url', url)
 
   const splitURL = url.split('/')
   .filter(char => char !== '');

@@ -56,28 +56,19 @@ export let options = {
 export default function () {
   const SLEEP_DURATION = 1;
 
-  // 1,000,011 product ids
-  // 3,543,838 question ids
-  // 6,904,118 answer ids
-  const product_idMax = 1000000; // started with 100000
-  const product_idMin = Math.floor(product_idMax * .9); // test last 10% of data
-  const product_id = Math.round((Math.random() * (product_idMax-product_idMin)) + product_idMin);
+  const randomizer = (max, min) => {
+    if (min) {
+      return Math.round((Math.random() * (max-min)) + min);
+    }
+    let calcMin = Math.floor(max * .9)
+    return Math.round((Math.random() * (max-calcMin)) + calcMin);
+  }
 
-  const question_idMax = 3500000; // started with 100000
-  const question_idMin = Math.floor(question_idMax * .9); // test last 10% of data
-  const question_id = Math.round((Math.random() * (question_idMax-question_idMin)) + question_idMin);
-
-  const answer_idMax = 6900000; // started with 100000
-  const answer_idMin = Math.floor(answer_idMax * .9);
-  const answer_id = Math.round((Math.random() * (answer_idMax-answer_idMin)) + answer_idMin);
-
-  const countMax = 100;
-  const countMin = 5;
-  const count = Math.round((Math.random() * (countMax-countMin)) + countMin);
-
-  const pageMax = 5;
-  const pageMin = 1;
-  const page = Math.round((Math.random() * (pageMax-pageMin)) + pageMin);
+  const product_id = randomizer(1000000) // total 1,000,011 product ids
+  const question_id = randomizer(3500000) // total 3,543,838 question ids
+  const answer_id = randomizer(6900000) // total 6,904,118 answer ids
+  const count = randomizer(100, 5)
+  const page = randomizer(5, 1)
 
   const questionData = {
     body: 'Testing: Will this work?',
