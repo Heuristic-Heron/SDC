@@ -1,45 +1,14 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
 
-// export let options = {
-//   stages: [
-//     { duration: '5s', target: 10 }, // below normal load
-//     { duration: '10s', target: 200 }, // normal load
-//     { duration: '10s', target: 800 }, // around the breaking point
-//     // { duration: '10s', target: 1000 }, // beyond the breaking point
-//     { duration: '10s', target: 0 }, // scale down. Recovery stage.
-//   ],
-//   thresholds: {
-//     http_req_failed: ['rate<0.01'], // errors less than 1%
-//     http_req_duration: ['p(95)<2000'] // 95% of requests should be under 2000ms
-//   }
-// };
 
-// // OPTIONS FOR SOLO TESTS
-// export let options = {
-//   stages: [
-//     { duration: '5s', target: 5 }, // below normal load (1/s)
-//     { duration: '5s', target: 50 }, // (10/s)
-//     { duration: '5s', target: 500 }, // normal load (100/s)
-//     { duration: '5s', target: 1000 }, // (200/s)
-//     { duration: '5s', target: 1500 }, // around the breaking point (300/s)
-//     // { duration: '5s', target: 2000 }, // beyond the breaking point
-//     // { duration: '5s', target: 5000 }, // beyond the breaking point
-//     { duration: '5s', target: 0 }, // scale down. Recovery stage.
-//   ],
-//   thresholds: {
-//     http_req_failed: ['rate<0.05'], // errors less than 1%
-//     http_req_duration: ['p(95)<3000'] // 95% of requests should be under 2000ms
-//   }
-// };
-
-// OPTIONS FOR ALL TESTS
+// OPTIONS FOR REMOTE SERVER TESTS
 export let options = {
   stages: [
     { duration: '5s', target: 5 }, // below normal load (1/s)
     { duration: '5s', target: 50 }, // (10/s)
-    { duration: '5s', target: 250 }, // normal load (50/s)
-    { duration: '5s', target: 300 }, // around the breaking point (100/s)
+    { duration: '5s', target: 500 }, // normal load (50/s)
+    { duration: '5s', target: 1000 }, // around the breaking point (200/s)
     { duration: '5s', target: 500 }, // beyond the breaking point
     { duration: '5s', target: 0 }, // scale down. Recovery stage.
   ],
