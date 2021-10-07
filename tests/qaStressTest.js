@@ -51,11 +51,22 @@ export let options = {
 
 
 export default function () {
-
   const SLEEP_DURATION = 1;
-  const idMax = 100000;
-  const idMin = 1;
-  const id = Math.round((Math.random() * (idMax-idMin)) + idMin);
+
+  // 1,000,011 product ids
+  // 3,543,838 question ids
+  // 6,904,118 answer ids
+  const product_idMax = 1000000; // started with 100000
+  const product_idMin = 1;
+  const product_id = Math.round((Math.random() * (idMax-idMin)) + idMin);
+
+  const question_idMax = 3500000; // started with 100000
+  const question_idMin = 1;
+  const question_id = Math.round((Math.random() * (idMax-idMin)) + idMin);
+
+  const answer_idMax = 6900000; // started with 100000
+  const answer_idMin = 1;
+  const answer_id = Math.round((Math.random() * (idMax-idMin)) + idMin);
 
   const countMax = 100;
   const countMin = 5;
@@ -84,42 +95,42 @@ export default function () {
     // GET questions requests <2.06s
     [
       'GET',
-      `${BASE_URL}/qa/questions?product_id=${id}&page=${page}&count=${count}`,
+      `${BASE_URL}/qa/questions?product_id=${product_id}&page=${page}&count=${count}`,
       null,
       { tags: { name: 'QuestionList' } },
     ],
     // GET answers request <2.07s
     [
       'GET',
-      `${BASE_URL}/qa/questions/:${id}/answers`,
+      `${BASE_URL}/qa/questions/:${question_id}/answers`,
       null,
       { tags: { name: 'AnswerList' } },
     ],
     // Helpful Question <1.77s
     [
       'PUT',
-      `${BASE_URL}/qa/questions/:${id}/helpful`,
+      `${BASE_URL}/qa/questions/:${question_id}/helpful`,
       null,
       { tags: { name: 'Helpful Question' } },
     ],
     // Helpful Answer <1.85s
     [
       'PUT',
-      `${BASE_URL}/qa/answers/:${id}/helpful`,
+      `${BASE_URL}/qa/answers/:${answer_id}/helpful`,
       null,
       { tags: { name: 'Helpful Answer' } },
     ],
     // Report Question <1.85s
     [
       'PUT',
-      `${BASE_URL}/qa/questions/:${id}/report`,
+      `${BASE_URL}/qa/questions/:${question_id}/report`,
       null,
       { tags: { name: 'Report Question' } },
     ],
     // Report Answer <1.82s
     [
       'PUT',
-      `${BASE_URL}/qa/answers/:${id}/report`,
+      `${BASE_URL}/qa/answers/:${answer_id}/report`,
       null,
       { tags: { name: 'Report Answer' } },
     ],
@@ -134,7 +145,7 @@ export default function () {
     // POST Answer <1.88s
     [
       'POST',
-      `${BASE_URL}/qa/questions/:${id}/answers`,
+      `${BASE_URL}/qa/questions/:${question_id}/answers`,
       JSON.stringify(answerData),
       { tags: { name: 'Post Answer' },
       headers: { 'Content-Type': 'application/json' } },

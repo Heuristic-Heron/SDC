@@ -9,6 +9,7 @@ const { getQuestions, getAnswers, postQuestion, postAnswer, putQuestionHelpful, 
 
 
 app.use(express.static(path.join(__dirname, "/client/dist")));
+app.use(express.static(path.join(__dirname, "loaderio-c8b50793fe2f098f65bf23dfabbc6fa6.txt")));
 
 app.use(express.json());
 app.use(compression());
