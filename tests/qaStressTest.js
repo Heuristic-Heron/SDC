@@ -44,7 +44,10 @@ export let options = {
     { duration: '5s', target: 0 }, // scale down. Recovery stage.
   ],
   thresholds: {
-    http_req_failed: [{threshold: 'rate<0.01', abortOnFail: true}], // errors less than 1%
+    http_req_failed: [{
+      threshold: 'rate<0.01', // errors less than 1%
+      // abortOnFail: true
+    }],
     http_req_duration: ['p(95)<3000'] // 95% of requests should be under 2000ms
   }
 };
@@ -57,16 +60,16 @@ export default function () {
   // 3,543,838 question ids
   // 6,904,118 answer ids
   const product_idMax = 1000000; // started with 100000
-  const product_idMin = 1;
-  const product_id = Math.round((Math.random() * (idMax-idMin)) + idMin);
+  const product_idMin = Math.floor(product_idMax * .9); // test last 10% of data
+  const product_id = Math.round((Math.random() * (product_idMax-product_idMin)) + product_idMin);
 
   const question_idMax = 3500000; // started with 100000
-  const question_idMin = 1;
-  const question_id = Math.round((Math.random() * (idMax-idMin)) + idMin);
+  const question_idMin = Math.floor(question_idMax * .9); // test last 10% of data
+  const question_id = Math.round((Math.random() * (question_idMax-question_idMin)) + question_idMin);
 
   const answer_idMax = 6900000; // started with 100000
-  const answer_idMin = 1;
-  const answer_id = Math.round((Math.random() * (idMax-idMin)) + idMin);
+  const answer_idMin = Math.floor(answer_idMax * .9);
+  const answer_id = Math.round((Math.random() * (answer_idMax-answer_idMin)) + answer_idMin);
 
   const countMax = 100;
   const countMin = 5;
@@ -80,7 +83,7 @@ export default function () {
     body: 'Testing: Will this work?',
     name: 'Cat Test',
     email: 'ilovetesting@yahoo.com',
-    product_id: id
+    product_id: product_id
   }
   const answerData = {
     body: 'Testing: This is the final answer. You can do it!',
@@ -106,50 +109,50 @@ export default function () {
       null,
       { tags: { name: 'AnswerList' } },
     ],
-    // Helpful Question <1.77s
-    [
-      'PUT',
-      `${BASE_URL}/qa/questions/:${question_id}/helpful`,
-      null,
-      { tags: { name: 'Helpful Question' } },
-    ],
-    // Helpful Answer <1.85s
-    [
-      'PUT',
-      `${BASE_URL}/qa/answers/:${answer_id}/helpful`,
-      null,
-      { tags: { name: 'Helpful Answer' } },
-    ],
-    // Report Question <1.85s
-    [
-      'PUT',
-      `${BASE_URL}/qa/questions/:${question_id}/report`,
-      null,
-      { tags: { name: 'Report Question' } },
-    ],
-    // Report Answer <1.82s
-    [
-      'PUT',
-      `${BASE_URL}/qa/answers/:${answer_id}/report`,
-      null,
-      { tags: { name: 'Report Answer' } },
-    ],
-    // POST Question <2.02s
-    [
-      'POST',
-      `${BASE_URL}/qa/questions`,
-      JSON.stringify(questionData),
-      { tags: { name: 'Post Question' },
-      headers: { 'Content-Type': 'application/json' } },
-    ],
-    // POST Answer <1.88s
-    [
-      'POST',
-      `${BASE_URL}/qa/questions/:${question_id}/answers`,
-      JSON.stringify(answerData),
-      { tags: { name: 'Post Answer' },
-      headers: { 'Content-Type': 'application/json' } },
-    ],
+    // // Helpful Question <1.77s
+    // [
+    //   'PUT',
+    //   `${BASE_URL}/qa/questions/:${question_id}/helpful`,
+    //   null,
+    //   { tags: { name: 'Helpful Question' } },
+    // ],
+    // // Helpful Answer <1.85s
+    // [
+    //   'PUT',
+    //   `${BASE_URL}/qa/answers/:${answer_id}/helpful`,
+    //   null,
+    //   { tags: { name: 'Helpful Answer' } },
+    // ],
+    // // Report Question <1.85s
+    // [
+    //   'PUT',
+    //   `${BASE_URL}/qa/questions/:${question_id}/report`,
+    //   null,
+    //   { tags: { name: 'Report Question' } },
+    // ],
+    // // Report Answer <1.82s
+    // [
+    //   'PUT',
+    //   `${BASE_URL}/qa/answers/:${answer_id}/report`,
+    //   null,
+    //   { tags: { name: 'Report Answer' } },
+    // ],
+    // // POST Question <2.02s
+    // [
+    //   'POST',
+    //   `${BASE_URL}/qa/questions`,
+    //   JSON.stringify(questionData),
+    //   { tags: { name: 'Post Question' },
+    //   headers: { 'Content-Type': 'application/json' } },
+    // ],
+    // // POST Answer <1.88s
+    // [
+    //   'POST',
+    //   `${BASE_URL}/qa/questions/:${question_id}/answers`,
+    //   JSON.stringify(answerData),
+    //   { tags: { name: 'Post Answer' },
+    //   headers: { 'Content-Type': 'application/json' } },
+    // ],
   ]);
 
   sleep(SLEEP_DURATION);
