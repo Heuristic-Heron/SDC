@@ -22,8 +22,8 @@ app.get('/*', (req, res) => {
   .filter(char => char !== '');
   const firstRoute = splitURL[0];
   switch (firstRoute) {
-    case 'loaderio-c8b50793fe2f098f65bf23dfabbc6fa6.txt':
-      const fileName = 'loaderio-c8b50793fe2f098f65bf23dfabbc6fa6.txt';
+    case 'loaderio-705926444fb3015a1828ef5c360d4c42.txt':
+      const fileName = 'loaderio-705926444fb3015a1828ef5c360d4c42.txt';
         const options = {
           root: path.join(__dirname)
         }
