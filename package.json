@@ -6,8 +6,8 @@
   "scripts": {
     "start": "NODE_ENV=production node server.js",
     "production": "npx webpack --config webpack.config.js --mode production",
+    "server": "nodemon server.js",
     "test": "jest",
-    "dev-server": "nodemon server.js",
     "transpile": "npx webpack --config webpack.config.js --mode development -w",
     "lint": "eslint \"**/*.js\" \"**/*.jsx\" --ignore-pattern node_modules/ --ignore-pattern dist/",
     "katdb": "psql postgres -U katherineyu < qaschema.sql",

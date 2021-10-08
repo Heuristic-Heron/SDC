@@ -1,12 +1,32 @@
+# to find config file in postgres
 select *  from pg_settings where name='shared_buffers'
-link to Postgres Config File:
+
+# link to Postgres Config File:
 /usr/local/var/postgres/postgresql.conf
 
-link to Postgres Log:
+# link to Postgres Log:
 /usr/local/var/log/postgres.log
 
-link to ssh (aws-sdc.pem file):
+# link to ssh (aws-sdc.pem file):
 ~/.ssh/aws-sdc.pem
 
-to connect to remote server:
+# to connect to remote server:
 ssh aws-sdc
+
+# to update ubuntu:
+sudo apt update        # Fetches the list of available updates
+sudo apt upgrade       # Installs some updates; does not remove packages
+sudo apt full-upgrade  # Installs updates; may also remove some packages, if needed
+sudo apt autoremove    # Removes any old packages that are no longer needed
+
+# to install node:
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash
+sudo apt-get install -y nodejs
+
+# to update git
+sudo apt-get install git
+
+to set port to redirect to 3000:
+sudo iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j REDIRECT --to-port 3000
+
+
