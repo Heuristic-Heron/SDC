@@ -7,5 +7,4 @@ aws-demo.pem
 aws-sdc.pem
 data/
 serverFEC.js
-newrelic.js
 newrelic_agent.log
