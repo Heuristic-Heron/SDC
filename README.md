@@ -1,6 +1,6 @@
 # SDC
 
-SDC is our Systems Design Capstone Project. Our team inherited a legacy codebase for an eCommerce site and we were tasked with developing the back end infrastructure for three microservices: Products, Questions and Answers, Ratings and Reviews. We optimized database queries, server and load balancer configurations and scaled our services to handle over 12 million records and heavy user traffic (at least 1000 requests per second) with low latency and low error rate (<1%).
+SDC is our Systems Design Capstone Project. Our team inherited a legacy codebase for an eCommerce site and was tasked with developing the back end infrastructure for three microservices: Products, Questions and Answers, Ratings and Reviews. We optimized database queries, server and load balancer configurations and scaled our services to handle over 12 million records and heavy user traffic (at least 1000 requests per second) with low latency and low error rate (<1%).
 
 
 ## Contributors
